@@ -1,217 +1,174 @@
 {% load static %}
+
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <title>{% block title %}SIGA{% endblock %}</title>
+  <title>{% block title %}SIGA — Admin{% endblock %}</title>
 
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <!-- CSS propio -->
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
-
-  <style>
-    body { 
-      background-color: #f6f7f9; 
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      color: #111827;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    .sidebar {
-      min-height: 100vh;
-      border-right: 1px solid #e5e7eb;
-      background: #fff;
-      position: sticky;
-      top: 56px;
-      overflow-y: auto;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    .sidebar .nav-link { color: #111827; border-radius: .5rem; }
-    .sidebar .nav-link.active { background: #111827; color: #fff; }
-    .sidebar .nav-link:hover { background: #f3f4f6; }
-
-    .content { padding: 24px; flex: 1; }
-
-    footer {
-      background: #f8f9fa;
-      border-top: 1px solid #e5e7eb;
-      text-align: center;
-      padding: 8px;
-      font-size: 0.9rem;
-      color: #555;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    /* 🌙 MODO OSCURO */
-    body.dark-mode { background-color: #181a1b; color: #e0e0e0; }
-    body.dark-mode .navbar { background-color: #1f1f1f !important; }
-    body.dark-mode .sidebar { background-color: #202324; border-right: 1px solid #333; }
-    body.dark-mode .sidebar .nav-link { color: #e0e0e0; }
-    body.dark-mode .sidebar .nav-link.active { background-color: #2e2f2f; color: #fff; }
-    body.dark-mode .sidebar .nav-link:hover { background-color: #2e2f2f; }
-    body.dark-mode footer { background-color: #1f1f1f; color: #bbb; border-color: #333; }
-    body.dark-mode .card { background-color: #262626; color: #eee; }
-  </style>
 </head>
-<body>
+
+<body class="{% if request.COOKIES.dark_mode == 'true' %}dark-mode{% endif %}">
 
   <!-- NAVBAR SUPERIOR -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
 
-      <!-- LOGO -->
-      <a class="navbar-brand" href="{% url 'asistencias:home' %}">
+      <!-- LOGO SIGA redirige al home -->
+      <a class="navbar-brand brand" href="{% url 'asistencias:home' %}">
         SIGA
       </a>
 
-      <!-- BOTÓN HAMBURGUESA -->
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-              aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <!-- LADO DERECHO DEL NAVBAR -->
+      <div class="d-flex align-items-center gap-2">
 
-      <!-- CONTENIDO DEL NAVBAR -->
-      <div class="collapse navbar-collapse" id="mainNavbar">
+        <!-- (Opcional) Botón modo oscuro: si lo usás con JS -->
+        <button id="darkModeToggle" type="button" class="btn btn-outline-light btn-sm">
+          Modo oscuro
+        </button>
 
         {% if request.user.is_authenticated %}
+          <!-- Texto de bienvenida -->
+          <span class="navbar-text me-2 d-none d-sm-inline">
+            Hola, {{ request.user.first_name|default:request.user.username }}
+          </span>
 
-          {% if request.user.rol == "ALUMNO" %}
-          <!-- ================================
-               NAVBAR DEL ALUMNO
-               ================================ -->
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <!-- Botón Perfil -->
+          <a href="{% url 'asistencias:editar_perfil' %}" class="btn btn-outline-light btn-sm">
+            Perfil
+          </a>
 
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'asistencias:alumno_dashboard' %}">Dashboard</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'asistencias:consulta_asistencia' %}">Mis asistencias</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'asistencias:subir_certificado' %}">Subir certificado</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'asistencias:alumno_metricas' %}">Mis métricas</a>
-            </li>
-
-          </ul>
-
-          {% elif request.user.rol == "DOCENTE" %}
-          <!-- ================================
-               NAVBAR DEL DOCENTE
-               ================================ -->
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'asistencias:docente_dashboard' %}">Dashboard</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'asistencias:cursos_docente' %}">Mis cursos</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'asistencias:docente_metricas' %}">Mis métricas</a>
-            </li>
-
-          </ul>
-
-          {% else %}
-          <!-- Otros roles autenticados (por si en el futuro) -->
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
-          {% endif %}
-
-          <!-- DERECHA: MODO OSCURO + PERFIL + LOGOUT -->
-          <div class="d-flex align-items-center gap-2 ms-auto">
-
-            <button id="darkModeToggle" class="btn btn-outline-light btn-sm">🌙</button>
-
-            <span class="navbar-text small text-light">
-              Hola, {{ request.user.username }}
-            </span>
-
-            <a href="{% url 'asistencias:editar_perfil' %}" class="btn btn-outline-light btn-sm">
-              Perfil
-            </a>
-
-            <form method="post" action="{% url 'logout' %}">
-              {% csrf_token %}
-              <button class="btn btn-danger btn-sm">Cerrar sesión</button>
-            </form>
-          </div>
-
+          <!-- Cerrar sesión por GET: SIN CSRF, SIN 403 -->
+          <a href="{% url 'asistencias:logout' %}" class="btn btn-danger btn-sm">
+            Cerrar sesión
+          </a>
         {% else %}
-        <!-- USUARIO NO AUTENTICADO -->
-        <ul class="navbar-nav me-auto"></ul>
-        <div class="d-flex ms-auto">
+          <!-- Si no está logueado, mostrar botón de login -->
           <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">
             Iniciar sesión
           </a>
-        </div>
         {% endif %}
 
       </div>
     </div>
   </nav>
 
-  <!-- CONTENIDO PRINCIPAL -->
-  <div class="container-fluid flex-grow-1">
+  <div class="container-fluid">
     <div class="row">
 
-      {% if request.user.is_authenticated and request.user.rol == "ADMIN" %}
-        <aside class="col-12 col-md-3 col-lg-2 p-3 sidebar">
-          {% include "partials/_admin_sidebar.html" %}
-        </aside>
-        <main class="col content">
+      {% if request.user.is_authenticated %}
+        <!-- SIDEBAR IZQUIERDO (solo si está logueado) -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse show" id="sidebarMenu">
+          <div class="position-sticky pt-3 sidebar-sticky">
+            <ul class="nav flex-column mb-3">
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'asistencias:home' %}">
+                  Inicio
+                </a>
+              </li>
+
+              <!-- Opciones Admin -->
+              {% if request.user.is_staff %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:admin_dashboard' %}">
+                    Dashboard Admin
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:usuarios_lista' %}">
+                    Usuarios
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:carreras_lista' %}">
+                    Carreras
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:materias_lista' %}">
+                    Materias
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:admin_cursadas' %}">
+                    Cursadas
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:lista_justificativos' %}">
+                    Justificativos
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:reportes_curso' %}">
+                    Reportes
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:admin_metricas' %}">
+                    Métricas Admin
+                  </a>
+                </li>
+              {% endif %}
+
+              <!-- (Ejemplo) Opciones Docente/Alumno si luego agregás flags -->
+              {# 
+              {% if user_es_docente %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:docente_dashboard' %}">
+                    Dashboard Docente
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if user_es_alumno %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:alumno_dashboard' %}">
+                    Dashboard Alumno
+                  </a>
+                </li>
+              {% endif %}
+              #}
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Si está autenticado, el main ocupa 9/12 -->
+        {% if request.user.is_authenticated %}
+          <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+        {% else %}
+          <main class="col-12 px-3 py-4">
+        {% endif %}
+
       {% else %}
-        <main class="col-12 content">
+        <!-- Si NO está autenticado, no hay sidebar y el main ocupa todo -->
+        <main class="col-12 px-3 py-4">
       {% endif %}
 
-          {% block content %}{% endblock %}
-        </main>
+        {% block content %}
+        {% endblock %}
+
+      </main>
 
     </div>
   </div>
 
-  <!-- PIE DE PÁGINA -->
-  <footer>
-    Instituto CENT40 - Campus Virtual Río Negro ©
+  <!-- FOOTER SIMPLE -->
+  <footer class="text-center py-3 mt-4 border-top small">
+    Sistema de Gestión Académica — Módulo de Asistencias · CENT 40
   </footer>
 
-  <!-- Bootstrap JS -->
+  <!-- JS Bootstrap -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- JS propio -->
-  <script src="{% static 'js/app.js' %}" defer></script>
-
-  <!-- Script Modo Oscuro -->
-  <script>
-    const toggle = document.getElementById('darkModeToggle');
-    const body = document.body;
-
-    if (toggle) {
-      if (localStorage.getItem('darkMode') === 'enabled') {
-        body.classList.add('dark-mode');
-        toggle.textContent = '☀️';
-      }
-      toggle.addEventListener('click', () => {
-        body.classList.toggle('dark-mode');
-        const isDark = body.classList.contains('dark-mode');
-        toggle.textContent = isDark ? '☀️' : '🌙';
-        localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
-      });
-    }
-  </script>
+  <!-- JS propio (si lo usás para el modo oscuro, etc.) -->
+  <script src="{% static 'js/main.js' %}"></script>
 
 </body>
 </html>

@@ -71,6 +71,13 @@ urlpatterns = [
     path("perfil/", editar_perfil, name="editar_perfil"),
     path("perfil/password/", cambiar_password, name="cambiar_password"),
 
+    # Logout propio del módulo: siempre redirige a Inicio
+    path(
+        "logout/",
+        auth_views.LogoutView.as_view(next_page="home"),
+        name="logout",
+    ),
+
     # =========================
     # ADMIN — Dashboard
     # =========================

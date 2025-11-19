@@ -52,8 +52,9 @@ footer {
 
 /* Bordes de los inputs */
 input[type="text"],
-input[type="password"] {
-    border-radius: 0 0.5rem 0.5rem 0 !important;
+input[type="password"],
+input[type="email"] {
+    border-radius: 0.5rem !important;
 }
 
 /* Botón primario del login */
@@ -69,6 +70,10 @@ input[type="password"] {
 
 .input-group input {
     max-width: 220px;
+}
+
+.input-group input[type="email"] {
+    max-width: 260px;
 }
 
 /* Checkbox centrado */
@@ -124,24 +129,126 @@ input[type="password"] {
     }
 }
 
-/* Padding extra en pantallas grandes */
 @media (min-width: 1200px) {
     .content {
         padding: 32px !important;
     }
 }
 
-.input-group input[type="email"] {
-    max-width: 260px;
+/* ================================
+   MODO OSCURO — AJUSTES DE CONTRASTE
+   ================================ */
+
+/* Fondo y texto general */
+body.dark-mode {
+    background-color: #0f172a;
+    color: #e5e7eb;
 }
 
-/* Formularios de autenticación */
-.input-group-text {
-    background-color: #e7e6ff !important;
+/* Navbar */
+body.dark-mode .navbar {
+    background-color: #020617 !important;
+    color: #e5e7eb;
 }
 
-input[type="email"],
-input[type="password"],
-input[type="text"] {
-    border-radius: 0.5rem !important;
+/* Sidebar y fondos claros */
+body.dark-mode .sidebar,
+body.dark-mode .bg-light {
+    background-color: #020617 !important;
+    color: #e5e7eb !important;
+    border-color: #1f2937 !important;
 }
+
+/* Contenido, tarjetas, modales */
+body.dark-mode .content,
+body.dark-mode .card,
+body.dark-mode .modal-content {
+    background-color: #111827;
+    color: #e5e7eb;
+    border-color: #1f2937;
+}
+
+/* Footer */
+body.dark-mode footer {
+    background-color: #020617;
+    color: #9ca3af;
+    border-top-color: #1f2937;
+}
+
+/* Tablas */
+body.dark-mode .table {
+    color: #e5e7eb;
+}
+
+body.dark-mode .table thead,
+body.dark-mode .table-dark,
+body.dark-mode .table-light {
+    background-color: #020617;
+    color: #e5e7eb;
+    border-color: #1f2937;
+}
+
+body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(31,41,55,0.6);
+}
+
+/* Textos muted */
+body.dark-mode .text-muted {
+    color: #9ca3af !important;
+}
+
+/* Links */
+body.dark-mode a {
+    color: #60a5fa;
+}
+
+body.dark-mode a:hover {
+    color: #93c5fd;
+}
+
+/* Formularios */
+body.dark-mode .form-label,
+body.dark-mode label {
+    color: #e5e7eb;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select,
+body.dark-mode textarea {
+    background-color: #020617;
+    color: #e5e7eb;
+    border-color: #374151;
+}
+
+body.dark-mode .form-control::placeholder,
+body.dark-mode textarea::placeholder {
+    color: #6b7280;
+}
+
+/* Alerts */
+body.dark-mode .alert {
+    background-color: #111827;
+    color: #e5e7eb;
+    border-color: #4b5563;
+}
+
+body.dark-mode .alert-success { background-color:#14532d; color:#bbf7d0; }
+body.dark-mode .alert-danger  { background-color:#7f1d1d; color:#fee2e2; }
+body.dark-mode .alert-info    { background-color:#0f172a; color:#e0f2fe; }
+
+/* Botones outline */
+body.dark-mode .btn-outline-secondary {
+    color: #e5e7eb;
+    border-color: #6b7280;
+}
+
+body.dark-mode .btn-outline-secondary:hover {
+    background-color: #6b7280;
+    color: #0f172a;
+}
+
+/* Badges ajustadas para dark mode */
+body.dark-mode .badge-presente    { background:#16a34a; color:#ecfdf5; }
+body.dark-mode .badge-justificado { background:#2563eb; color:#eff6ff; }
+body.dark-mode .badge-ausente     { background:#dc2626; color:#fef2f2; }
+body.dark-mode .badge-tardanza    { background:#f59e0b; color:#fffbeb; }
