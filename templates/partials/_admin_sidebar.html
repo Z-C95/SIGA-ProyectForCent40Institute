@@ -1,0 +1,52 @@
+{# templates/partials/_admin_sidebar.html #}
+<nav class="nav flex-column gap-1">
+
+  <span class="text-uppercase text-muted small px-2 mt-2">Panel</span>
+  <a class="nav-link {% if request.resolver_match.url_name == 'admin_cursadas' %}active{% endif %}"
+     href="{% url 'asistencias:admin_cursadas' %}">
+    Cursadas
+  </a>
+  <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
+     href="{% url 'asistencias:admin_dashboard' %}">
+    Dashboard
+  </a>
+
+  <span class="text-uppercase text-muted small px-2 mt-3">Usuarios</span>
+  <a class="nav-link {% if request.resolver_match.url_name == 'usuarios_lista' %}active{% endif %}"
+     href="{% url 'asistencias:usuarios_lista' %}">
+    Listado de usuarios
+  </a>
+  <a class="nav-link {% if request.resolver_match.url_name == 'usuarios_crear' %}active{% endif %}"
+     href="{% url 'asistencias:usuarios_crear' %}">
+    Nuevo usuario
+  </a>
+
+  <span class="text-uppercase text-muted small px-2 mt-3">Académico</span>
+  <a class="nav-link {% if request.resolver_match.url_name == 'crear_carrera' %}active{% endif %}"
+     href="{% url 'asistencias:crear_carrera' %}">
+    Nueva carrera
+  </a>
+  <a class="nav-link {% if request.resolver_match.url_name == 'crear_materia' %}active{% endif %}"
+     href="{% url 'asistencias:crear_materia' %}">
+    Nueva materia
+  </a>
+  <a class="nav-link {% if request.resolver_match.url_name == 'asignar_docente' %}active{% endif %}"
+     href="{% url 'asistencias:asignar_docente' %}">
+    Asignar docente
+  </a>
+  <a class="nav-link {% if request.resolver_match.url_name == 'inscribir_alumnos' %}active{% endif %}"
+     href="{% url 'asistencias:inscribir_alumnos' %}">
+    Inscribir alumnos
+  </a>
+
+  <span class="text-uppercase text-muted small px-2 mt-3">Gestión</span>
+  <a class="nav-link {% if request.resolver_match.url_name == 'lista_justificativos' %}active{% endif %}"
+     href="{% url 'asistencias:lista_justificativos' %}">
+    Justificativos
+  </a>
+  <a class="nav-link {% if request.resolver_match.url_name == 'reportes_curso' %}active{% endif %}"
+     href="{% url 'asistencias:reportes_curso' %}">
+    Reportes
+  </a>
+
+</nav>

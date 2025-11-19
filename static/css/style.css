@@ -1,0 +1,22 @@
+/* estilos propios */ 
+/* Tabla: compacta, con hover claro */
+.table.table-striped tr:hover { filter: brightness(0.98); }
+
+/* Badges de estado de asistencia */
+.badge-presente { background:#16a34a; }
+.badge-justificado { background:#2563eb; }
+.badge-ausente { background:#dc2626; }
+.badge-tardanza { background:#f59e0b; }
+
+/* Resaltar alumnos con % bajo (ej. < 75%) */
+.riesgo { background: #fff4f4 !important; }
+.riesgo td:last-child { color:#dc2626; font-weight:700; }
+
+/* Botón flotante para acciones frecuentes (ej: “Subir certificado”) */
+.btn-flotante {
+  position: fixed; right: 20px; bottom: 20px; z-index: 9999;
+  padding: 10px 16px; border-radius: 999px; box-shadow: 0 8px 20px rgba(0,0,0,.15);
+}
+
+/* Footer más fino en mobile */
+footer { font-size: .85rem; }

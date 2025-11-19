@@ -1,0 +1,25 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Validar justificativos{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Justificativos</h1>
+<table class="table table-bordered table-striped">
+  <thead><tr><th>Alumno</th><th>Materia</th><th>Periodo</th><th>Fecha</th><th>Archivo</th><th>Acciones</th></tr></thead>
+  <tbody>
+  {% for j in justificativos %}
+    <tr>
+      <td>{{ j.alumno_materia.alumno }}</td>
+      <td>{{ j.alumno_materia.materia.nombre }}</td>
+      <td>{{ j.alumno_materia.periodo.id }}</td>
+      <td>{{ j.fecha }}</td>
+      <td>{{ j.justificativo_path|default:"-" }}</td>
+      <td>
+        <a class="btn btn-sm btn-success" href="{% url 'asistencias:aprobar_justificativo' j.id %}">Aprobar</a>
+        <a class="btn btn-sm btn-danger" href="{% url 'asistencias:rechazar_justificativo' j.id %}">Rechazar</a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="text-center text-muted">Sin justificativos.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

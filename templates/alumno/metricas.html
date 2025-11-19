@@ -1,0 +1,77 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Mis métricas{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Mi asistencia</h1>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card p-3">
+      <div class="text-muted small">Registros de asistencia</div>
+      <div class="h4 mb-0">{{ kpis.total }}</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card p-3">
+      <div class="text-muted small">% asistencia (Presente + Justificado)</div>
+      <div class="h4 mb-0">{{ kpis.porcentaje_asistencia }}%</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-2">
+    <div class="card p-3">
+      <div class="text-muted small">Presentes</div>
+      <div class="h4 mb-0">{{ kpis.presentes }}</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-2">
+    <div class="card p-3">
+      <div class="text-muted small">Justificados</div>
+      <div class="h4 mb-0">{{ kpis.justificados }}</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-2">
+    <div class="card p-3">
+      <div class="text-muted small">Ausentes / Tardanzas</div>
+      <div class="h5 mb-0">{{ kpis.ausentes }} / {{ kpis.tardanzas }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card p-3">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h6 class="mb-0">Mi asistencia por materia (%)</h6>
+    <small class="text-muted">Sólo tus materias</small>
+  </div>
+  <canvas id="chartAlumno" height="120"></canvas>
+  {% if not chart_labels %}
+    <p class="text-muted small mt-2 mb-0">Todavía no hay datos de asistencia registrados.</p>
+  {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const alumnoLabels = {{ chart_labels|safe }};
+  const alumnoValues = {{ chart_values|safe }};
+
+  if (alumnoLabels.length) {
+    new Chart(document.getElementById('chartAlumno'), {
+      type: 'bar',
+      data: {
+        labels: alumnoLabels,
+        datasets: [{
+          label: '% asistencia',
+          data: alumnoValues
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            title: { display: true, text: '% asistencia' }
+          }
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

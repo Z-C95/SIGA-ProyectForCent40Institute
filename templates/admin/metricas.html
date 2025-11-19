@@ -1,0 +1,105 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Métricas — Admin{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Métricas generales de asistencia</h1>
+
+<form method="get" class="row g-2 mb-4">
+  <div class="col-sm-5">
+    <label class="form-label">Materia</label>
+    <select name="materia" class="form-select">
+      <option value="">Todas</option>
+      {% for m in materias %}
+        <option value="{{ m.id }}" {% if m.id|stringformat:"s" == materia_id %}selected{% endif %}>
+          {{ m.nombre }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-5">
+    <label class="form-label">Período</label>
+    <select name="periodo" class="form-select">
+      <option value="">Todos</option>
+      {% for p in periodos %}
+        <option value="{{ p.id }}" {% if p.id|stringformat:"s" == periodo_id %}selected{% endif %}>
+          {{ p.nombre }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-2 d-grid align-items-end">
+    <button class="btn btn-outline-secondary" type="submit">Aplicar</button>
+  </div>
+</form>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card p-3">
+      <div class="text-muted small">Registros de asistencia</div>
+      <div class="h4 mb-0">{{ kpis.total }}</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card p-3">
+      <div class="text-muted small">% asistencia (Presente + Justificado)</div>
+      <div class="h4 mb-0">{{ kpis.porcentaje_asistencia }}%</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-2">
+    <div class="card p-3">
+      <div class="text-muted small">Presentes</div>
+      <div class="h4 mb-0">{{ kpis.presentes }}</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-2">
+    <div class="card p-3">
+      <div class="text-muted small">Justificados</div>
+      <div class="h4 mb-0">{{ kpis.justificados }}</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-2">
+    <div class="card p-3">
+      <div class="text-muted small">Ausentes / Tardanzas</div>
+      <div class="h5 mb-0">{{ kpis.ausentes }} / {{ kpis.tardanzas }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card p-3">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h6 class="mb-0">Asistencia por materia (%)</h6>
+    <small class="text-muted">Sólo materias con registros</small>
+  </div>
+  <canvas id="chartMateria" height="120"></canvas>
+  {% if not chart_labels %}
+    <p class="text-muted small mt-2 mb-0">No hay datos para los filtros seleccionados.</p>
+  {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const adminLabels = {{ chart_labels|safe }};
+  const adminValues = {{ chart_values|safe }};
+
+  if (adminLabels.length) {
+    new Chart(document.getElementById('chartMateria'), {
+      type: 'bar',
+      data: {
+        labels: adminLabels,
+        datasets: [{
+          label: '% asistencia',
+          data: adminValues
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            title: { display: true, text: '% asistencia' }
+          }
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

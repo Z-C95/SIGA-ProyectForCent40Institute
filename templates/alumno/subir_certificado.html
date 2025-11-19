@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Subir certificado{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Subir certificado</h1>
+<form method="post" enctype="multipart/form-data" class="card p-4 shadow-sm" style="max-width:500px;">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label class="form-label">Cursada</label>
+    <select name="cursada" class="form-select" required>
+      {% for c in cursadas %}
+        <option value="{{ c.id }}">{{ c.materia.nombre }} ({{ c.periodo.id }})</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Fecha</label>
+    <input type="date" name="fecha" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Certificado (PDF)</label>
+    <input type="file" name="certificado" class="form-control" accept="application/pdf" required>
+  </div>
+  <button class="btn btn-success w-100" type="submit">Subir</button>
+</form>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Usuarios{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Usuarios</h1>
+  <a class="btn btn-primary" href="{% url 'asistencias:usuarios_crear' %}">Nuevo</a>
+</div>
+
+<!-- Buscador + Filtros -->
+<form method="get" class="row g-2 mb-3 align-items-end">
+  <div class="col-12 col-md-4">
+    <label class="form-label">Buscar</label>
+    <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Usuario, email o rol…">
+  </div>
+
+  <div class="col-6 col-md-3">
+    <label class="form-label">Rol</label>
+    <select name="rol" class="form-select">
+      {% for r in roles %}
+        <option value="{{ r.value }}" {% if r.value == rol %}selected{% endif %}>{{ r.label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-6 col-md-2">
+    <label class="form-label">Activo</label>
+    <select name="activo" class="form-select">
+      <option value="" {% if activo == "" %}selected{% endif %}>Todos</option>
+      <option value="1" {% if activo == "1" %}selected{% endif %}>Sí</option>
+      <option value="0" {% if activo == "0" %}selected{% endif %}>No</option>
+    </select>
+  </div>
+
+  <div class="col-6 col-md-2">
+    <label class="form-label">Staff</label>
+    <select name="staff" class="form-select">
+      <option value="" {% if staff == "" %}selected{% endif %}>Todos</option>
+      <option value="1" {% if staff == "1" %}selected{% endif %}>Sí</option>
+      <option value="0" {% if staff == "0" %}selected{% endif %}>No</option>
+    </select>
+  </div>
+
+  <div class="col-6 col-md-1 d-grid">
+    <button class="btn btn-outline-secondary" type="submit">Filtrar</button>
+  </div>
+
+  <div class="col-6 col-md-2 d-grid mt-2 mt-md-0">
+    <a class="btn btn-light" href="{% url 'asistencias:usuarios_lista' %}">Limpiar</a>
+  </div>
+</form>
+
+<table class="table table-bordered table-striped align-middle">
+  <thead class="table-dark text-center">
+    <tr>
+      <th>Usuario</th>
+      <th>Email</th>
+      <th>Rol</th>
+      <th>Activo</th>
+      <th>Staff</th>
+      <th style="width:110px;"></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for u in usuarios %}
+    <tr>
+      <td>{{ u.username }}</td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.rol }}</td>
+      <td>{{ u.is_active|yesno:"Sí,No" }}</td>
+      <td>{{ u.is_staff|yesno:"Sí,No" }}</td>
+      <td class="text-center">
+        <a class="btn btn-sm btn-warning" href="{% url 'asistencias:usuarios_editar' u.id %}">Editar</a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="text-center text-muted">Sin usuarios.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if usuarios.paginator.num_pages > 1 %}
+<nav aria-label="Paginación de usuarios">
+  <ul class="pagination justify-content-center">
+    {% if usuarios.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?{% if qs %}{{ qs }}&{% endif %}page={{ usuarios.previous_page_number }}">« Anterior</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">« Anterior</span></li>
+    {% endif %}
+
+    {% for num in usuarios.paginator.page_range %}
+      <li class="page-item {% if usuarios.number == num %}active{% endif %}">
+        <a class="page-link" href="?{% if qs %}{{ qs }}&{% endif %}page={{ num }}">{{ num }}</a>
+      </li>
+    {% endfor %}
+
+    {% if usuarios.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?{% if qs %}{{ qs }}&{% endif %}page={{ usuarios.next_page_number }}">Siguiente »</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Siguiente »</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+{% endblock %}

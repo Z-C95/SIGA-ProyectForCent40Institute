@@ -1,0 +1,47 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Panel Administrativo{% endblock %}
+{% block content %}
+<h1 class="h4 mb-4">Panel Administrativo</h1>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="card shadow-sm text-center"><div class="card-body">
+    <h5 class="card-title">Docentes</h5><p class="display-6">{{ total_docentes }}</p>
+  </div></div></div>
+
+  <div class="col-md-3"><div class="card shadow-sm text-center"><div class="card-body">
+    <h5 class="card-title">Alumnos</h5><p class="display-6">{{ total_alumnos }}</p>
+  </div></div></div>
+
+  <div class="col-md-3"><div class="card shadow-sm text-center"><div class="card-body">
+    <h5 class="card-title">Materias</h5><p class="display-6">{{ total_materias }}</p>
+  </div></div></div>
+
+  <div class="col-md-3"><div class="card shadow-sm text-center"><div class="card-body">
+    <h5 class="card-title">Asistencias</h5><p class="display-6">{{ total_asistencias }}</p>
+  </div></div></div>
+</div>
+
+<div class="d-flex flex-wrap gap-3 mb-4">
+  <a href="{% url 'asistencias:asignar_docente' %}" class="btn btn-primary">Asignar Docente</a>
+  <a href="{% url 'asistencias:inscribir_alumnos' %}" class="btn btn-secondary">Inscribir Alumnos</a>
+  <a href="{% url 'asistencias:reportes_curso' %}" class="btn btn-success">Ver Reportes</a>
+  <a href="{% url 'asistencias:admin_metricas' %}" class="btn btn-outline-dark">Ver Métricas</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100 d-flex flex-column">
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title mb-2">Métricas de asistencia</h5>
+        <p class="card-text text-muted small flex-grow-1">
+          Visualizá rápidamente el porcentaje de asistencia global, por materia y por período
+          para generar informes institucionales.
+        </p>
+        <a href="{% url 'asistencias:admin_metricas' %}" class="btn btn-outline-primary mt-auto">
+          Ir a métricas
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

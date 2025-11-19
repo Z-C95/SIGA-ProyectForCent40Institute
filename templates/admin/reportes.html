@@ -1,0 +1,100 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Reportes{% endblock %}
+{% block content %}
+
+<h1 class="h4 mb-3">Reportes de Asistencia</h1>
+
+{# Mensajes flash #}
+{% if messages %}
+  <div class="mb-3">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} mb-2">{{ message }}</div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- Filtros -->
+<form method="get" class="row g-2 align-items-end mb-4">
+  <div class="col-12 col-md-6">
+    <label class="form-label">Seleccionar curso</label>
+    <select name="curso" class="form-select">
+      <option value="">-- Seleccionar --</option>
+      {% for c in cursos %}
+        <option value="{{ c.id }}" {% if c.id|stringformat:"s" == curso_id %}selected{% endif %}>
+          {{ c.materia.nombre }} — {{ c.periodo.nombre }} ({{ c.docente }})
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-6 col-md-2 d-grid">
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+  </div>
+
+  {% if curso %}
+  <div class="col-6 col-md-2 d-grid">
+    <a href="?curso={{ curso.id }}&export=csv" class="btn btn-outline-success">Exportar CSV</a>
+  </div>
+  <div class="col-6 col-md-2 d-grid">
+    <a href="?curso={{ curso.id }}&export=xlsx" class="btn btn-outline-info">Exportar XLSX</a>
+  </div>
+  {% endif %}
+</form>
+
+{% if curso %}
+  <h5 class="mb-3">Curso: <strong>{{ curso.materia.nombre }}</strong> — {{ curso.periodo.nombre }}</h5>
+
+  <table class="table table-bordered table-striped align-middle">
+    <thead class="table-dark text-center">
+      <tr>
+        <th>Alumno</th>
+        <th>Total</th>
+        <th>Presentes</th>
+        <th>Justificados</th>
+        <th>Ausentes</th>
+        <th>% Asistencia</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for d in datos %}
+      <tr data-porcentaje="{{ d.porcentaje }}">
+        <td>{{ d.alumno }}</td>
+        <td class="text-center">{{ d.total }}</td>
+        <td class="text-center">{{ d.presentes }}</td>
+        <td class="text-center">{{ d.justificados }}</td>
+        <td class="text-center">{{ d.ausentes }}</td>
+        <td class="text-center">{{ d.porcentaje }}%</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="text-center text-muted">Sin registros.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {# Paginación #}
+  {% if datos.paginator.num_pages > 1 %}
+  <nav aria-label="Paginación">
+    <ul class="pagination justify-content-center">
+      {% if datos.has_previous %}
+        <li class="page-item"><a class="page-link" href="?curso={{ curso.id }}&page={{ datos.previous_page_number }}">« Anterior</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">« Anterior</span></li>
+      {% endif %}
+
+      {% for num in datos.paginator.page_range %}
+        <li class="page-item {% if datos.number == num %}active{% endif %}">
+          <a class="page-link" href="?curso={{ curso.id }}&page={{ num }}">{{ num }}</a>
+        </li>
+      {% endfor %}
+
+      {% if datos.has_next %}
+        <li class="page-item"><a class="page-link" href="?curso={{ curso.id }}&page={{ datos.next_page_number }}">Siguiente »</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Siguiente »</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+{% endif %}
+
+{% endblock %}

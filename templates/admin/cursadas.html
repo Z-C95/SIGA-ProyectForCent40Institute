@@ -1,0 +1,39 @@
+{% extends "layouts/base_admin.html" %}
+
+{% block title %}Cursadas (DocenteMateria){% endblock %}
+
+{% block content %}
+<h1 class="h4 mb-3">Cursadas</h1>
+
+<div class="mb-3 d-flex gap-2">
+  <a href="{% url 'asistencias:asignar_docente' %}" class="btn btn-primary btn-sm">
+    Asignar docente
+  </a>
+  <a href="{% url 'asistencias:inscribir_alumnos' %}" class="btn btn-secondary btn-sm">
+    Inscribir alumnos
+  </a>
+</div>
+
+<table class="table table-bordered table-striped table-sm align-middle">
+  <thead class="table-light">
+    <tr>
+      <th>Materia</th>
+      <th>Periodo</th>
+      <th>Docente</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for c in cursadas %}
+    <tr>
+      <td>{{ c.materia.nombre }}</td>
+      <td>{{ c.periodo.nombre }}</td>
+      <td>{{ c.docente.apellido }}, {{ c.docente.nombre }}</td>
+    </tr>
+  {% empty %}
+    <tr>
+      <td colspan="3" class="text-center text-muted">Sin asignaciones.</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

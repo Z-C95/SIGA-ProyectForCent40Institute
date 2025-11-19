@@ -1,0 +1,28 @@
+# --- Python / Django ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Virtualenv
+venv/
+.env/
+.venv/
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+*.sqlite3
+
+# IDE / OS
+.vscode/
+.idea/
+*.code-workspace
+.DS_Store
+Thumbs.db
+
+# Migrations opcional (si querés versionarlas, borra esta línea)
+# */migrations/*.py
+# !*/migrations/__init__.py

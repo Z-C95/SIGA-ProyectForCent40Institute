@@ -1,0 +1,14 @@
+
+{% extends "layouts/base_admin.html" %}
+{% block title %}Asignar docente a materia/periodo{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Asignar docente</h1>
+<form method="post" class="card p-3 shadow-sm" style="max-width:560px;">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <div class="d-flex gap-2">
+    <button class="btn btn-success">Guardar</button>
+    <a href="{% url 'asistencias:admin_cursadas' %}" class="btn btn-secondary">Volver</a>
+  </div>
+</form>
+{% endblock %}

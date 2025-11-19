@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Marcar asistencia{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Marcar asistencia - {{ curso.materia.nombre }} ({{ curso.periodo.id }})</h1>
+<form method="post" class="card p-3 shadow-sm">
+  {% csrf_token %}
+  <div class="table-responsive">
+    <table class="table table-bordered">
+      <thead><tr><th>Alumno</th><th>Estado</th></tr></thead>
+      <tbody>
+      {% for alumno in alumnos %}
+        <tr>
+          <td>{{ alumno.apellido }}, {{ alumno.nombre }}</td>
+          <td>
+            <select name="alumno_{{ alumno.id }}" class="form-select form-select-sm">
+              <option value="Presente">Presente</option>
+              <option value="Ausente">Ausente</option>
+              <option value="Tardanza">Tardanza</option>
+              <option value="Justificado">Justificado</option>
+            </select>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-success">Guardar</button>
+    <a class="btn btn-secondary" href="{% url 'asistencias:cursos_docente' %}">Volver</a>
+  </div>
+</form>
+{% endblock %}

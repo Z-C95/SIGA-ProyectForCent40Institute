@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mi perfil{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Mi perfil</h1>
+    <a href="{% url 'asistencias:cambiar_password' %}" class="btn btn-outline-secondary btn-sm">
+        Cambiar contraseña
+    </a>
+  </div>
+
+  {# Mensajes de Django #}
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-1" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="row">
+      <div class="col-md-4">
+        <div class="card mb-3">
+          <div class="card-header">Avatar</div>
+          <div class="card-body text-center">
+            {% if request.user.avatar %}
+              <img src="{{ request.user.avatar.url }}"
+                   alt="Avatar"
+                   class="rounded-circle mb-3"
+                   style="width:120px;height:120px;object-fit:cover;">
+            {% else %}
+              <div class="rounded-circle bg-secondary mb-3 d-flex align-items-center justify-content-center"
+                   style="width:120px;height:120px;">
+                <span class="text-white fs-3">
+                  {{ request.user.username|first|upper }}
+                </span>
+              </div>
+            {% endif %}
+
+            <div class="mb-2">
+              {{ user_form.avatar }}
+              {% if user_form.avatar.errors %}
+                <div class="text-danger small">
+                  {{ user_form.avatar.errors|striptags }}
+                </div>
+              {% endif %}
+            </div>
+
+            <small class="text-muted d-block">
+              Formato recomendado: JPG o PNG, máx. 2MB.
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-8">
+        <div class="card mb-3">
+          <div class="card-header">Datos de cuenta</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label">Usuario</label>
+              <input type="text" class="form-control" value="{{ request.user.username }}" disabled>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ user_form.email.id_for_label }}">Correo electrónico</label>
+              {{ user_form.email }}
+              {% if user_form.email.errors %}
+                <div class="text-danger small">
+                  {{ user_form.email.errors|striptags }}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        {% if docente_form %}
+        <div class="card mb-3">
+          <div class="card-header">Datos de docente</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="{{ docente_form.nombre.id_for_label }}">Nombre</label>
+                {{ docente_form.nombre }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="{{ docente_form.apellido.id_for_label }}">Apellido</label>
+                {{ docente_form.apellido }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="{{ docente_form.legajo.id_for_label }}">Legajo</label>
+                {{ docente_form.legajo }}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if alumno_form %}
+        <div class="card mb-3">
+          <div class="card-header">Datos de alumno</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="{{ alumno_form.nombre.id_for_label }}">Nombre</label>
+                {{ alumno_form.nombre }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="{{ alumno_form.apellido.id_for_label }}">Apellido</label>
+                {{ alumno_form.apellido }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="{{ alumno_form.dni.id_for_label }}">DNI</label>
+                {{ alumno_form.dni }}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-primary">
+            Guardar cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
