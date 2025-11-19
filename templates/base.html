@@ -68,13 +68,20 @@
         <span class="navbar-text me-2">
           Hola, {{ request.user.username }}
         </span>
+
         {% if request.user.is_authenticated %}
+          <!-- PERFIL -->
           <a href="{% url 'asistencias:editar_perfil' %}" class="btn btn-outline-light btn-sm">
             Perfil
           </a>
-          <a href="{% url 'logout' %}?next={% url 'login' %}" class="btn btn-danger btn-sm">
-            Cerrar sesión
-          </a>
+
+          <!-- CERRAR SESIÓN POR POST -->
+          <form method="post" action="{% url 'logout' %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">
+              Cerrar sesión
+            </button>
+          </form>
         {% endif %}
       </div>
     </div>
@@ -84,7 +91,7 @@
   <div class="container-fluid flex-grow-1">
     <div class="row">
 
-      {# Sidebar solo para usuarios autenticados con rol ADMIN #}
+      {# Sidebar solo para usuarios ADMIN #}
       {% if request.user.is_authenticated and request.user.rol == 'ADMIN' %}
         <aside class="col-12 col-md-3 col-lg-2 p-3 sidebar">
           {% include "partials/_admin_sidebar.html" %}
