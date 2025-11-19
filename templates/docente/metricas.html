@@ -1,94 +1,109 @@
-{% extends "layouts/base_admin.html" %}
+{% extends "base.html" %}
 {% block title %}Métricas — Docente{% endblock %}
+
 {% block content %}
-<h1 class="h4 mb-3">Métricas de mis cursos</h1>
+<div class="container mt-2">
 
-<form method="get" class="row g-2 mb-4">
-  <div class="col-md-8">
-    <label class="form-label">Curso (Materia / Período)</label>
-    <select name="curso" class="form-select">
-      <option value="">Todos mis cursos</option>
-      {% for c in cursos %}
-        <option value="{{ c.id }}" {% if c.id|stringformat:"s" == curso_id %}selected{% endif %}>
-          {{ c.materia.nombre }} — {{ c.periodo.nombre }}
-        </option>
-      {% endfor %}
-    </select>
+  <!-- Encabezado -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+    <div>
+      <h1 class="h4 mb-1">Mis métricas de asistencia</h1>
+      <p class="text-muted small mb-0">
+        Aquí podés ver estadísticas generales y los estados de cada uno de tus cursos.
+      </p>
+    </div>
   </div>
-  <div class="col-md-4 d-grid align-items-end">
-    <button class="btn btn-outline-secondary" type="submit">Filtrar</button>
-  </div>
-</form>
 
-<div class="row g-3 mb-4">
-  <div class="col-sm-6 col-lg-3">
-    <div class="card p-3">
-      <div class="text-muted small">Registros de asistencia</div>
-      <div class="h4 mb-0">{{ kpis.total }}</div>
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Cursos asignados</div>
+          <div class="h3 mb-0">{{ total_cursos }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Alumnos totales</div>
+          <div class="h3 mb-0">{{ alumnos_totales }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Asistencias registradas</div>
+          <div class="h3 mb-0">{{ asistencias_totales }}</div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="col-sm-6 col-lg-3">
-    <div class="card p-3">
-      <div class="text-muted small">% asistencia (Presente + Justificado)</div>
-      <div class="h4 mb-0">{{ kpis.porcentaje_asistencia }}%</div>
+
+  <!-- Detalle por curso -->
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <h2 class="h6 mb-3">Detalle por curso</h2>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Materia</th>
+              <th>Carrera</th>
+              <th>Período</th>
+              <th class="text-center">% asistencia</th>
+              <th class="text-center">Alumnos en riesgo</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for d in detalle_cursos %}
+            <tr>
+              <td>{{ d.curso.materia.nombre }}</td>
+              <td>{{ d.curso.carrera.nombre }}</td>
+              <td>{{ d.curso.periodo }}</td>
+
+              <td class="text-center">
+                <span class="badge {% if d.porcentaje < 75 %}bg-danger{% else %}bg-success{% endif %}">
+                  {{ d.porcentaje }}%
+                </span>
+              </td>
+
+              <td class="text-center">
+                {% if d.cant_riesgo > 0 %}
+                  <span class="badge bg-danger">{{ d.cant_riesgo }}</span>
+                {% else %}
+                  <span class="badge bg-success">0</span>
+                {% endif %}
+              </td>
+
+              <td class="text-center">
+                <a href="{% url 'asistencias:marcar_asistencia' d.curso.id %}"
+                   class="btn btn-primary btn-sm">
+                  Tomar asistencia
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-muted text-center small py-3">
+                No se encontraron métricas disponibles.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+
+        </table>
+      </div>
+
     </div>
   </div>
-  <div class="col-sm-6 col-lg-2">
-    <div class="card p-3">
-      <div class="text-muted small">Presentes</div>
-      <div class="h4 mb-0">{{ kpis.presentes }}</div>
-    </div>
-  </div>
-  <div class="col-sm-6 col-lg-2">
-    <div class="card p-3">
-      <div class="text-muted small">Justificados</div>
-      <div class="h4 mb-0">{{ kpis.justificados }}</div>
-    </div>
-  </div>
-  <div class="col-sm-6 col-lg-2">
-    <div class="card p-3">
-      <div class="text-muted small">Ausentes / Tardanzas</div>
-      <div class="h5 mb-0">{{ kpis.ausentes }} / {{ kpis.tardanzas }}</div>
-    </div>
-  </div>
+
 </div>
-
-<div class="card p-3">
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <h6 class="mb-0">Asistencia por materia (%)</h6>
-    <small class="text-muted">Incluye sólo tus cursos</small>
-  </div>
-  <canvas id="chartDocente" height="120"></canvas>
-  {% if not chart_labels %}
-    <p class="text-muted small mt-2 mb-0">No hay datos para el filtro seleccionado.</p>
-  {% endif %}
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  const docenteLabels = {{ chart_labels|safe }};
-  const docenteValues = {{ chart_values|safe }};
-
-  if (docenteLabels.length) {
-    new Chart(document.getElementById('chartDocente'), {
-      type: 'bar',
-      data: {
-        labels: docenteLabels,
-        datasets: [{
-          label: '% asistencia',
-          data: docenteValues
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            title: { display: true, text: '% asistencia' }
-          }
-        }
-      }
-    });
-  }
-</script>
 {% endblock %}

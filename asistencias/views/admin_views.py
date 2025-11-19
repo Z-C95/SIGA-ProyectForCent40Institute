@@ -481,10 +481,8 @@ def reportes_curso(request):
         ws = wb.active
         ws.title = "Reporte"
 
-        # --- Intentar insertar logo institucional (opcional) ---
-        # Ruta sugerida: <BASE_DIR>/static/img/logo.png
         from pathlib import Path
-        base_dir = Path(__file__).resolve().parents[2]  # .../modulo-asistencia-main
+        base_dir = Path(__file__).resolve().parents[2]
         logo_path = base_dir / "static" / "img" / "logo.png"
         start_row = 1
         if logo_path.exists():
@@ -875,84 +873,6 @@ def admin_metricas(request):
         "periodo_id": str(periodo_id or ""),
     }
     return render(request, "admin/metricas.html", context)
-
-
-@login_required
-def docente_metricas(request):
-    # Asegurar rol docente
-    if not hasattr(request.user, "docente"):
-        messages.error(request, "Acceso restringido a docentes.")
-        return redirect("asistencias:home")
-
-    docente = request.user.docente
-    curso_id = request.GET.get("curso")  # DocenteMateria.id
-
-    cursos = (
-        DocenteMateria.objects
-        .filter(docente=docente)
-        .select_related("materia", "periodo")
-        .order_by("-periodo__id", "materia__nombre")
-    )
-
-    asistencias = (
-        Asistencia.objects
-        .filter(alumno_materia__materia__docentemateria__docente=docente)
-        .select_related("alumno_materia__materia", "alumno_materia__periodo")
-    )
-
-    if curso_id:
-        dm = get_object_or_404(DocenteMateria, id=curso_id, docente=docente)
-        asistencias = asistencias.filter(
-            alumno_materia__materia=dm.materia,
-            alumno_materia__periodo=dm.periodo,
-        )
-
-    agg = asistencias.aggregate(
-        total=Count("id"),
-        presentes=Count(Case(When(estado="Presente", then=1), output_field=IntegerField())),
-        justificados=Count(Case(When(estado="Justificado", then=1), output_field=IntegerField())),
-        ausentes=Count(Case(When(estado="Ausente", then=1), output_field=IntegerField())),
-        tardanzas=Count(Case(When(estado="Tardanza", then=1), output_field=IntegerField())),
-    )
-    total = agg["total"] or 0
-    pct = lambda x: round((x / total * 100), 2) if total else 0
-    kpis = {
-        "total": total,
-        "presentes": agg["presentes"] or 0,
-        "justificados": agg["justificados"] or 0,
-        "ausentes": agg["ausentes"] or 0,
-        "tardanzas": agg["tardanzas"] or 0,
-        "porcentaje_asistencia": pct((agg["presentes"] or 0) + (agg["justificados"] or 0)),
-    }
-
-    por_materia = (
-        asistencias
-        .values("alumno_materia__materia__nombre")
-        .annotate(
-            total=Count("id"),
-            ok=Count(Case(
-                When(estado__in=["Presente", "Justificado"], then=1),
-                output_field=IntegerField()
-            ))
-        )
-        .order_by("alumno_materia__materia__nombre")
-    )
-
-    chart_labels = [r["alumno_materia__materia__nombre"] for r in por_materia]
-    chart_values = [
-        round((r["ok"] / r["total"] * 100), 2) if r["total"] else 0
-        for r in por_materia
-    ]
-
-    context = {
-        "kpis": kpis,
-        "chart_labels": chart_labels,
-        "chart_values": chart_values,
-        "cursos": cursos,
-        "curso_id": str(curso_id or ""),
-    }
-    return render(request, "docente/metricas.html", context)
-
 
 @login_required
 def alumno_metricas(request):

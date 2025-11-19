@@ -1,25 +1,131 @@
 {% extends "base.html" %}
-{% block title %}Subir certificado{% endblock %}
+{% block title %}Subir certificado — Alumno{% endblock %}
+
 {% block content %}
-<h1 class="h4 mb-3">Subir certificado</h1>
-<form method="post" enctype="multipart/form-data" class="card p-4 shadow-sm" style="max-width:500px;">
-  {% csrf_token %}
-  <div class="mb-3">
-    <label class="form-label">Cursada</label>
-    <select name="cursada" class="form-select" required>
-      {% for c in cursadas %}
-        <option value="{{ c.id }}">{{ c.materia.nombre }} ({{ c.periodo.id }})</option>
-      {% endfor %}
-    </select>
+<div class="container mt-2">
+
+  <div class="row">
+    <div class="col-12 col-lg-6 mb-3">
+      <h1 class="h4 mb-1">Subir certificado</h1>
+      <p class="text-muted small mb-3">
+        Adjuntá un certificado para justificar una inasistencia. El equipo administrativo lo revisará.
+      </p>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data" id="certForm">
+            {% csrf_token %}
+
+            <!-- Materia -->
+            <div class="mb-3">
+              <label for="id_cursada" class="form-label small">Materia / Período</label>
+              <select class="form-select form-select-sm" id="id_cursada" name="cursada" required>
+                <option value="">Seleccioná una materia...</option>
+                {% for am in cursadas %}
+                  <option value="{{ am.id }}">
+                    {{ am.materia.nombre }} — {{ am.periodo }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Fecha -->
+            <div class="mb-3">
+              <label for="id_fecha" class="form-label small">Fecha a justificar</label>
+              <input type="date" class="form-control form-control-sm" id="id_fecha" name="fecha" required>
+            </div>
+
+            <!-- Archivo -->
+            <div class="mb-3">
+              <label for="id_certificado" class="form-label small">Certificado (PDF o imagen)</label>
+              <input type="file"
+                     class="form-control form-control-sm"
+                     id="id_certificado"
+                     name="certificado"
+                     accept=".pdf,image/*"
+                     required>
+              <div class="form-text small">
+                Tamaño máximo sugerido: 5 MB.
+              </div>
+            </div>
+
+            <!-- Previsualización simple -->
+            <div id="filePreview" class="alert alert-secondary py-2 small d-none"></div>
+
+            <button type="submit" class="btn btn-success btn-sm">
+              Subir certificado
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Listado de justificativos -->
+    <div class="col-12 col-lg-6 mb-3">
+      <h2 class="h6 mb-2">Justificativos enviados</h2>
+      <p class="text-muted small">
+        Aquí podés ver los certificados que ya subiste y su estado de revisión.
+      </p>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm table-striped align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Materia</th>
+                  <th class="text-center">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for a in justificativos %}
+                <tr>
+                  <td>{{ a.fecha|date:"d/m/Y" }}</td>
+                  <td>{{ a.alumno_materia.materia.nombre }}</td>
+                  <td class="text-center small">
+                    {% if a.validado_por %}
+                      <span class="badge bg-success">Revisado</span>
+                    {% else %}
+                      <span class="badge bg-warning text-dark">Pendiente</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="3" class="text-center text-muted small py-3">
+                    Todavía no subiste certificados.
+                  </td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
-  <div class="mb-3">
-    <label class="form-label">Fecha</label>
-    <input type="date" name="fecha" class="form-control" required>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Certificado (PDF)</label>
-    <input type="file" name="certificado" class="form-control" accept="application/pdf" required>
-  </div>
-  <button class="btn btn-success w-100" type="submit">Subir</button>
-</form>
+
+</div>
+
+<script>
+  // Mini previsualización de archivo (solo nombre y tamaño aproximado)
+  const fileInput = document.getElementById('id_certificado');
+  const preview = document.getElementById('filePreview');
+
+  if (fileInput && preview) {
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        preview.classList.add('d-none');
+        preview.textContent = '';
+        return;
+      }
+      const sizeKB = Math.round(file.size / 1024);
+      preview.textContent = `Archivo seleccionado: ${file.name} (${sizeKB} KB)`;
+      preview.classList.remove('d-none');
+    });
+  }
+</script>
 {% endblock %}

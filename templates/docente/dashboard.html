@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Panel docente{% endblock %}
+
+{% block content %}
+<div class="container mt-2">
+
+  <!-- Encabezado -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+    <div>
+      <h1 class="h4 mb-1">Panel del docente</h1>
+      <p class="text-muted small mb-0">
+        Resumen general de tus cursos, alumnos y asistencias registradas.
+      </p>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+
+    <div class="col-6 col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Cursos asignados</div>
+          <div class="h3 mb-0">{{ total_cursos }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Alumnos totales</div>
+          <div class="h3 mb-0">{{ alumnos_totales }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Registros de asistencia</div>
+          <div class="h3 mb-0">{{ asistencias_totales }}</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Lista de cursos -->
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <h2 class="h6 mb-3">Mis cursos</h2>
+
+      {% if cursos %}
+        <div class="row g-3">
+          {% for c in cursos %}
+          <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body">
+
+                <!-- Nombre de materia -->
+                <h3 class="h6 mb-1">{{ c.materia.nombre }}</h3>
+
+                <!-- Período -->
+                <p class="text-muted small mb-2">
+                  Período: {{ c.periodo }}
+                </p>
+
+                <!-- Turno (si existe en tu modelo) -->
+                {% if c.turno %}
+                  <p class="text-muted small mb-2">Turno: {{ c.turno }}</p>
+                {% endif %}
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                  <a href="{% url 'asistencias:marcar_asistencia' c.id %}"
+                     class="btn btn-primary btn-sm">
+                    Tomar asistencia
+                  </a>
+
+                  <a href="{% url 'asistencias:docente_metricas' %}?curso={{ c.id }}"
+                     class="btn btn-outline-secondary btn-sm">
+                    Ver métricas
+                  </a>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted small mb-0">
+          Todavía no tenés cursos asignados.
+        </p>
+      {% endif %}
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

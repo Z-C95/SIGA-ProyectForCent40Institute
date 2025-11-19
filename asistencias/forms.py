@@ -1,4 +1,3 @@
-# asistencias/forms.py
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
@@ -66,6 +65,19 @@ class CustomUserCreationForm(forms.ModelForm):
 
 
 class CustomUserEditForm(forms.ModelForm):
+    # Campos opcionales para que el ADMIN pueda cambiar la contraseña
+    new_password1 = forms.CharField(
+        label="Nueva contraseña",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "autocomplete": "new-password"}),
+        required=False,
+        help_text="Dejar en blanco si no querés cambiar la contraseña.",
+    )
+    new_password2 = forms.CharField(
+        label="Confirmar nueva contraseña",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "autocomplete": "new-password"}),
+        required=False,
+    )
+
     class Meta:
         model = User
         fields = ["username", "email", "rol", "is_active", "is_staff", "is_superuser"]
@@ -91,6 +103,42 @@ class CustomUserEditForm(forms.ModelForm):
         if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
             raise ValidationError("Ya existe un usuario con ese correo.")
         return email
+
+    def clean_new_password1(self):
+        """
+        Valida la nueva contraseña sólo si el admin escribió algo.
+        """
+        pwd = self.cleaned_data.get("new_password1")
+        if pwd:
+            # Usa las validaciones de Django, teniendo en cuenta al usuario
+            validate_password(pwd, user=self.instance)
+        return pwd
+
+    def clean(self):
+        cleaned = super().clean()
+        pwd1 = cleaned.get("new_password1")
+        pwd2 = cleaned.get("new_password2")
+
+        # Si uno de los dos campos está cargado, verificamos que coincidan
+        if pwd1 or pwd2:
+            if pwd1 != pwd2:
+                self.add_error("new_password2", "Las contraseñas no coinciden.")
+        return cleaned
+
+    def save(self, commit=True):
+        """
+        Guarda los datos del usuario y, si se indicó una nueva contraseña,
+        la actualiza usando set_password().
+        """
+        user = super().save(commit=False)
+
+        new_password = self.cleaned_data.get("new_password1")
+        if new_password:
+            user.set_password(new_password)
+
+        if commit:
+            user.save()
+        return user
 
 
 # ================================

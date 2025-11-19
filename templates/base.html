@@ -4,12 +4,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}SIGA — Admin{% endblock %}</title>
 
+  <title>{% block title %}SIGA{% endblock %}</title>
+
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <!-- CSS propio -->
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
-  <!-- <link rel="icon" href="{% static 'img/favicon.ico' %}"> -->
 
   <style>
     body { 
@@ -20,6 +22,7 @@
       color: #111827;
       transition: background-color 0.3s, color 0.3s;
     }
+
     .sidebar {
       min-height: 100vh;
       border-right: 1px solid #e5e7eb;
@@ -29,11 +32,13 @@
       overflow-y: auto;
       transition: background-color 0.3s, color 0.3s;
     }
+
     .sidebar .nav-link { color: #111827; border-radius: .5rem; }
     .sidebar .nav-link.active { background: #111827; color: #fff; }
     .sidebar .nav-link:hover { background: #f3f4f6; }
-    .brand { font-weight: 700; letter-spacing: .5px; }
-    .content { padding: 24px; flex: 1; transition: background-color 0.3s, color 0.3s; }
+
+    .content { padding: 24px; flex: 1; }
+
     footer {
       background: #f8f9fa;
       border-top: 1px solid #e5e7eb;
@@ -43,6 +48,7 @@
       color: #555;
       transition: background-color 0.3s, color 0.3s;
     }
+
     /* 🌙 MODO OSCURO */
     body.dark-mode { background-color: #181a1b; color: #e0e0e0; }
     body.dark-mode .navbar { background-color: #1f1f1f !important; }
@@ -56,43 +62,113 @@
 </head>
 <body>
 
-  <!-- Barra superior -->
+  <!-- NAVBAR SUPERIOR -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="{% url 'asistencias:home' %}">SIGA</a>
 
-      <div class="d-flex align-items-center ms-auto gap-2">
-        <!-- Botón modo oscuro -->
-        <button id="darkModeToggle" class="btn btn-outline-light btn-sm">🌙</button>
+      <!-- LOGO -->
+      <a class="navbar-brand" href="{% url 'asistencias:home' %}">
+        SIGA
+      </a>
 
-        <span class="navbar-text me-2">
-          Hola, {{ request.user.username }}
-        </span>
+      <!-- BOTÓN HAMBURGUESA -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+              aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- CONTENIDO DEL NAVBAR -->
+      <div class="collapse navbar-collapse" id="mainNavbar">
 
         {% if request.user.is_authenticated %}
-          <!-- PERFIL -->
-          <a href="{% url 'asistencias:editar_perfil' %}" class="btn btn-outline-light btn-sm">
-            Perfil
-          </a>
 
-          <!-- CERRAR SESIÓN POR POST -->
-          <form method="post" action="{% url 'logout' %}" class="d-inline">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger btn-sm">
-              Cerrar sesión
-            </button>
-          </form>
+          {% if request.user.rol == "ALUMNO" %}
+          <!-- ================================
+               NAVBAR DEL ALUMNO
+               ================================ -->
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'asistencias:alumno_dashboard' %}">Dashboard</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'asistencias:consulta_asistencia' %}">Mis asistencias</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'asistencias:subir_certificado' %}">Subir certificado</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'asistencias:alumno_metricas' %}">Mis métricas</a>
+            </li>
+
+          </ul>
+
+          {% elif request.user.rol == "DOCENTE" %}
+          <!-- ================================
+               NAVBAR DEL DOCENTE
+               ================================ -->
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'asistencias:docente_dashboard' %}">Dashboard</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'asistencias:cursos_docente' %}">Mis cursos</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'asistencias:docente_metricas' %}">Mis métricas</a>
+            </li>
+
+          </ul>
+
+          {% else %}
+          <!-- Otros roles autenticados (por si en el futuro) -->
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
+          {% endif %}
+
+          <!-- DERECHA: MODO OSCURO + PERFIL + LOGOUT -->
+          <div class="d-flex align-items-center gap-2 ms-auto">
+
+            <button id="darkModeToggle" class="btn btn-outline-light btn-sm">🌙</button>
+
+            <span class="navbar-text small text-light">
+              Hola, {{ request.user.username }}
+            </span>
+
+            <a href="{% url 'asistencias:editar_perfil' %}" class="btn btn-outline-light btn-sm">
+              Perfil
+            </a>
+
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button class="btn btn-danger btn-sm">Cerrar sesión</button>
+            </form>
+          </div>
+
+        {% else %}
+        <!-- USUARIO NO AUTENTICADO -->
+        <ul class="navbar-nav me-auto"></ul>
+        <div class="d-flex ms-auto">
+          <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">
+            Iniciar sesión
+          </a>
+        </div>
         {% endif %}
+
       </div>
     </div>
   </nav>
 
-  <!-- Contenido principal -->
+  <!-- CONTENIDO PRINCIPAL -->
   <div class="container-fluid flex-grow-1">
     <div class="row">
 
-      {# Sidebar solo para usuarios ADMIN #}
-      {% if request.user.is_authenticated and request.user.rol == 'ADMIN' %}
+      {% if request.user.is_authenticated and request.user.rol == "ADMIN" %}
         <aside class="col-12 col-md-3 col-lg-2 p-3 sidebar">
           {% include "partials/_admin_sidebar.html" %}
         </aside>
@@ -100,22 +176,26 @@
       {% else %}
         <main class="col-12 content">
       {% endif %}
+
           {% block content %}{% endblock %}
         </main>
 
     </div>
   </div>
 
-  <!-- Pie de página -->
+  <!-- PIE DE PÁGINA -->
   <footer>
     Instituto CENT40 - Campus Virtual Río Negro ©
   </footer>
 
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
   <!-- JS propio -->
   <script src="{% static 'js/app.js' %}" defer></script>
+
+  <!-- Script Modo Oscuro -->
   <script>
-    // ======== Script de modo oscuro ========
     const toggle = document.getElementById('darkModeToggle');
     const body = document.body;
 

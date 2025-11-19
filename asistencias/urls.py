@@ -21,13 +21,13 @@ from .views.admin_views import (
 
     # Carreras / Materias
     carreras_lista,
-    carrera_detalle,      # <-- NUEVO
+    carrera_detalle,
     carrera_editar,
     carrera_eliminar,
     crear_carrera,
 
     materias_lista,
-    materia_detalle,      # <-- NUEVO
+    materia_detalle,
     materia_editar,
     materia_eliminar,
     crear_materia,
@@ -40,22 +40,24 @@ from .views.admin_views import (
     # Reportes
     reportes_curso,
 
-    # Métricas
+    # Métricas (solo Admin; Docente y Alumno van en sus views)
     admin_metricas,
-    docente_metricas,
-    alumno_metricas,
 )
 
 # Vistas de DOCENTE
 from .views.docente_views import (
     cursos_docente,
     marcar_asistencia,
+    docente_dashboard,
+    docente_metricas,
 )
 
 # Vistas de ALUMNO
 from .views.alumno_views import (
+    alumno_dashboard,       # Dashboard del alumno
     consulta_asistencia,
     subir_certificado,
+    alumno_metricas,        # Métricas del alumno
 )
 
 app_name = "asistencias"
@@ -86,7 +88,7 @@ urlpatterns = [
     # ADMIN — Carreras
     # =========================
     path("admin/carreras/", carreras_lista, name="carreras_lista"),
-    path("admin/carreras/<int:carrera_id>/", carrera_detalle, name="carrera_detalle"),  # <-- NUEVA
+    path("admin/carreras/<int:carrera_id>/", carrera_detalle, name="carrera_detalle"),
     path("admin/carreras/nueva/", crear_carrera, name="crear_carrera"),
     path("admin/carreras/editar/<int:carrera_id>/", carrera_editar, name="carrera_editar"),
     path("admin/carreras/eliminar/<int:carrera_id>/", carrera_eliminar, name="carrera_eliminar"),
@@ -95,7 +97,7 @@ urlpatterns = [
     # ADMIN — Materias
     # =========================
     path("admin/materias/", materias_lista, name="materias_lista"),
-    path("admin/materias/<int:materia_id>/", materia_detalle, name="materia_detalle"),  # <-- NUEVA
+    path("admin/materias/<int:materia_id>/", materia_detalle, name="materia_detalle"),
     path("admin/materias/nueva/", crear_materia, name="crear_materia"),
     path("admin/materias/editar/<int:materia_id>/", materia_editar, name="materia_editar"),
     path("admin/materias/eliminar/<int:materia_id>/", materia_eliminar, name="materia_eliminar"),
@@ -130,12 +132,14 @@ urlpatterns = [
     # =========================
     # DOCENTE
     # =========================
+    path("docente/dashboard/", docente_dashboard, name="docente_dashboard"),
     path("docente/cursos/", cursos_docente, name="cursos_docente"),
     path("docente/marcar/<int:curso_id>/", marcar_asistencia, name="marcar_asistencia"),
-
+    
     # =========================
     # ALUMNO
     # =========================
+    path("alumno/dashboard/", alumno_dashboard, name="alumno_dashboard"),
     path("alumno/asistencias/", consulta_asistencia, name="consulta_asistencia"),
     path("alumno/justificativo/subir/", subir_certificado, name="subir_certificado"),
 

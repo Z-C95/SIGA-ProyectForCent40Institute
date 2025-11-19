@@ -26,11 +26,11 @@ def home(request):
 
     if getattr(request.user, "rol", None) == "DOCENTE":
         # DOCENTE → cursos del docente
-        return redirect("asistencias:cursos_docente")
+        return redirect("asistencias:docente_dashboard")
 
     if getattr(request.user, "rol", None) == "ALUMNO":
         # ALUMNO → vista de asistencias
-        return redirect("asistencias:consulta_asistencia")
+        return redirect("asistencias:alumno_dashboard")
 
     # Por si hay algún usuario sin rol definido
     return render(request, "home.html")

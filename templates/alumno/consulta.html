@@ -1,47 +1,116 @@
 {% extends "base.html" %}
-{% block title %}Mis asistencias{% endblock %}
-{% block content %}
-<h1 class="h4 mb-3">Resumen por cursada</h1>
-<table class="table table-bordered table-striped">
-  <thead><tr><th>Materia</th><th>Periodo</th><th>Total</th><th>Pres.</th><th>Just.</th><th>Aus.</th><th>%</th></tr></thead>
-  <tbody>
-  {% for d in datos %}
-    <tr>
-      <td>{{ d.cursada.materia.nombre }}</td>
-      <td>{{ d.cursada.periodo.id }}</td>
-      <td>{{ d.total }}</td>
-      <td>{{ d.presentes }}</td>
-      <td>{{ d.justificados }}</td>
-      <td>{{ d.ausentes }}</td>
-      <td>{{ d.porcentaje }}%</td>
-    </tr>
-  {% empty %}
-    <tr><td colspan="7" class="text-center text-muted">Sin datos.</td></tr>
-  {% endfor %}
-  </tbody>
-</table>
+{% block title %}Mis asistencias — Alumno{% endblock %}
 
-<h2 class="h5 mt-4">Detalle</h2>
-<table class="table table-sm table-hover">
-  <thead><tr><th>Materia</th><th>Periodo</th><th>Fecha</th><th>Estado</th><th>Justificativo</th></tr></thead>
-  <tbody>
-  {% for a in asistencias %}
-    <tr>
-      <td>{{ a.alumno_materia.materia.nombre }}</td>
-      <td>{{ a.alumno_materia.periodo.id }}</td>
-      <td>{{ a.fecha }}</td>
-      <td>{{ a.estado }}</td>
-      <td>
-        {% if a.justificativo_path %}
-          {{ a.justificativo_path }}
-        {% else %}
-          -
-        {% endif %}
-      </td>
-    </tr>
-  {% empty %}
-    <tr><td colspan="5" class="text-center text-muted">Sin registros.</td></tr>
-  {% endfor %}
-  </tbody>
-</table>
+{% block content %}
+<div class="container mt-2">
+
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+    <div>
+      <h1 class="h4 mb-1">Mis asistencias</h1>
+      <p class="text-muted small mb-0">
+        Consultá tu registro de asistencias por materia.
+      </p>
+    </div>
+  </div>
+
+  {% if cursos %}
+    <div class="row g-3">
+      {% for item in cursos %}
+        {% with am=item.cursada %}
+        <div class="col-12 col-md-6">
+          <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+
+              <!-- Cabecera materia -->
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <div>
+                  <h2 class="h6 mb-0">{{ am.materia.nombre }}</h2>
+                  <small class="text-muted">
+                    {{ am.periodo }}
+                  </small>
+                </div>
+                <div class="text-end">
+                  <span class="badge {% if item.porcentaje < 75 %}bg-danger{% else %}bg-success{% endif %}">
+                    {{ item.porcentaje }}%
+                  </span>
+                  <div class="text-muted small">Asistencia</div>
+                </div>
+              </div>
+
+              <!-- Resumen -->
+              <p class="mb-2 small text-muted">
+                Registros: {{ item.total }} ·
+                <span class="badge badge-presente">Presente: {{ item.presentes }}</span>
+                <span class="badge badge-justificado">Justificado: {{ item.justificados }}</span>
+                <span class="badge badge-ausente">Ausente/Tardanza: {{ item.ausentes }}</span>
+              </p>
+
+              <!-- Botón ver detalle -->
+              <button class="btn btn-outline-primary btn-sm"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#detalle-{{ am.id }}"
+                      aria-expanded="false"
+                      aria-controls="detalle-{{ am.id }}">
+                Ver detalle
+              </button>
+
+              <!-- Detalle colapsable -->
+              <div class="collapse mt-3" id="detalle-{{ am.id }}">
+                <div class="table-responsive">
+                  <table class="table table-sm table-striped align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Fecha</th>
+                        <th class="text-center">Estado</th>
+                        <th>Observaciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% for a in item.asistencias %}
+                      <tr>
+                        <td>{{ a.fecha|date:"d/m/Y" }}</td>
+                        <td class="text-center">
+                          {% if a.estado == "Presente" %}
+                            <span class="badge badge-presente">Presente</span>
+                          {% elif a.estado == "Justificado" %}
+                            <span class="badge badge-justificado">Justificado</span>
+                          {% elif a.estado == "Tardanza" %}
+                            <span class="badge badge-tardanza">Tardanza</span>
+                          {% else %}
+                            <span class="badge badge-ausente">Ausente</span>
+                          {% endif %}
+                        </td>
+                        <td class="small">
+                          {% if a.observaciones %}
+                            {{ a.observaciones }}
+                          {% else %}
+                            <span class="text-muted">—</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% endwith %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted small">
+      Todavía no hay registros de asistencia asociados a tus materias.
+    </p>
+  {% endif %}
+
+  <!-- Botón flotante: Subir certificado -->
+  <a href="{% url 'asistencias:subir_certificado' %}" class="btn btn-success btn-flotante">
+    📄 Subir certificado
+  </a>
+
+</div>
 {% endblock %}

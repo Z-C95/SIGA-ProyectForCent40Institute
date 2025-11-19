@@ -1,32 +1,175 @@
 {% extends "base.html" %}
-{% block title %}Marcar asistencia{% endblock %}
+{% block title %}Tomar asistencia — Docente{% endblock %}
+
 {% block content %}
-<h1 class="h4 mb-3">Marcar asistencia - {{ curso.materia.nombre }} ({{ curso.periodo.id }})</h1>
-<form method="post" class="card p-3 shadow-sm">
-  {% csrf_token %}
-  <div class="table-responsive">
-    <table class="table table-bordered">
-      <thead><tr><th>Alumno</th><th>Estado</th></tr></thead>
-      <tbody>
-      {% for alumno in alumnos %}
-        <tr>
-          <td>{{ alumno.apellido }}, {{ alumno.nombre }}</td>
-          <td>
-            <select name="alumno_{{ alumno.id }}" class="form-select form-select-sm">
-              <option value="Presente">Presente</option>
-              <option value="Ausente">Ausente</option>
-              <option value="Tardanza">Tardanza</option>
-              <option value="Justificado">Justificado</option>
-            </select>
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+<div class="container mt-2">
+
+  <!-- Encabezado -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+    <div>
+      <h1 class="h4 mb-1">Tomar asistencia</h1>
+      <p class="text-muted small mb-0">
+        Materia: {{ curso.materia.nombre }} — Período: {{ curso.periodo }}
+      </p>
+    </div>
   </div>
-  <div class="d-flex gap-2">
-    <button class="btn btn-success">Guardar</button>
-    <a class="btn btn-secondary" href="{% url 'asistencias:cursos_docente' %}">Volver</a>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Fila fecha + acciones rápidas -->
+        <div class="row g-3 mb-3">
+
+          <!-- Fecha -->
+          <div class="col-sm-4">
+            <label class="form-label small" for="id_fecha">Fecha</label>
+            <input type="date"
+                   id="id_fecha"
+                   name="fecha"
+                   class="form-control form-control-sm"
+                   value="{{ fecha|date:'Y-m-d' }}">
+          </div>
+
+          <!-- Botones rápidos -->
+          <div class="col-sm-8 d-flex flex-column justify-content-end">
+            <div class="small text-muted mb-1">Acciones rápidas:</div>
+            <div class="d-flex flex-wrap gap-2">
+              <button type="button" class="btn btn-outline-success btn-sm" id="btnTodosPresente">
+                Marcar todo Presente
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-sm" id="btnTodosAusente">
+                Marcar todo Ausente
+              </button>
+              <button type="button" class="btn btn-outline-warning btn-sm" id="btnTodosTardanza">
+                Marcar todo Tardanza
+              </button>
+              <button type="button" class="btn btn-outline-info btn-sm" id="btnTodosJustificado">
+                Marcar todo Justificado
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Tabla de alumnos -->
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Alumno</th>
+                <th class="text-center">Estado</th>
+                <th>Observaciones</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for fila in alumnos %}
+              <tr class="fila-asistencia">
+                <td>
+                  {{ fila.alumno.nombre }} {{ fila.alumno.apellido }}
+                </td>
+                <td class="text-center" style="min-width: 140px;">
+                  <select name="estado_{{ fila.alumno_materia_id }}"
+                          class="form-select form-select-sm select-estado"
+                          data-estado-select>
+                    <option value="Presente"   {% if fila.estado == "Presente" %}selected{% endif %}>Presente</option>
+                    <option value="Ausente"    {% if fila.estado == "Ausente" %}selected{% endif %}>Ausente</option>
+                    <option value="Tardanza"   {% if fila.estado == "Tardanza" %}selected{% endif %}>Tardanza</option>
+                    <option value="Justificado" {% if fila.estado == "Justificado" %}selected{% endif %}>Justificado</option>
+                  </select>
+                </td>
+                <td>
+                  <input type="text"
+                         name="obs_{{ fila.alumno_materia_id }}"
+                         class="form-control form-control-sm"
+                         value="{{ fila.observaciones|default_if_none:'' }}">
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="3" class="text-center text-muted small py-3">
+                  No hay alumnos inscriptos para esta materia y período.
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Botón Guardar -->
+        <div class="d-flex justify-content-end mt-3">
+          <button type="submit" class="btn btn-primary btn-sm">
+            Guardar asistencia
+          </button>
+        </div>
+
+      </form>
+
+    </div>
   </div>
-</form>
+
+</div>
+
+<!-- Script de botones rápidos y ayuda visual -->
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const selects = document.querySelectorAll("select[data-estado-select]");
+
+    function setAll(value) {
+      selects.forEach(sel => {
+        sel.value = value;
+        actualizarFila(sel);
+      });
+    }
+
+    const btnPresente = document.getElementById("btnTodosPresente");
+    const btnAusente = document.getElementById("btnTodosAusente");
+    const btnTardanza = document.getElementById("btnTodosTardanza");
+    const btnJust = document.getElementById("btnTodosJustificado");
+
+    if (btnPresente)  btnPresente.addEventListener("click", () => setAll("Presente"));
+    if (btnAusente)   btnAusente.addEventListener("click", () => setAll("Ausente"));
+    if (btnTardanza)  btnTardanza.addEventListener("click", () => setAll("Tardanza"));
+    if (btnJust)      btnJust.addEventListener("click", () => setAll("Justificado"));
+
+    // Colorear filas según el estado (ayuda visual rápida)
+    function actualizarFila(select) {
+      const tr = select.closest("tr");
+      if (!tr) return;
+
+      tr.classList.remove("estado-presente", "estado-ausente", "estado-tardanza", "estado-justificado");
+
+      switch (select.value) {
+        case "Presente":
+          tr.classList.add("estado-presente");
+          break;
+        case "Ausente":
+          tr.classList.add("estado-ausente");
+          break;
+        case "Tardanza":
+          tr.classList.add("estado-tardanza");
+          break;
+        case "Justificado":
+          tr.classList.add("estado-justificado");
+          break;
+      }
+    }
+
+    // Aplicar colores al cargar
+    selects.forEach(sel => {
+      actualizarFila(sel);
+      sel.addEventListener("change", () => actualizarFila(sel));
+    });
+  });
+</script>
+
+<style>
+  /* Colores suaves para filas según estado */
+  .estado-presente   { background-color: rgba(34,197,94,0.06); }   /* verde claro */
+  .estado-ausente    { background-color: rgba(239,68,68,0.06); }   /* rojo claro */
+  .estado-tardanza   { background-color: rgba(234,179,8,0.10); }   /* amarillo suave */
+  .estado-justificado{ background-color: rgba(59,130,246,0.06); }  /* azul claro */
+</style>
 {% endblock %}

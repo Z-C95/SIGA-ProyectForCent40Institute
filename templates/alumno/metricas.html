@@ -1,77 +1,92 @@
-{% extends "layouts/base_admin.html" %}
-{% block title %}Mis métricas{% endblock %}
+{% extends "base.html" %}
+{% block title %}Mis métricas — Alumno{% endblock %}
+
 {% block content %}
-<h1 class="h4 mb-3">Mi asistencia</h1>
+<div class="container mt-2">
 
-<div class="row g-3 mb-4">
-  <div class="col-sm-6 col-lg-3">
-    <div class="card p-3">
-      <div class="text-muted small">Registros de asistencia</div>
-      <div class="h4 mb-0">{{ kpis.total }}</div>
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+    <div>
+      <h1 class="h4 mb-1">Mis métricas de asistencia</h1>
+      <p class="text-muted small mb-0">
+        Visualizá tu desempeño de asistencia por materia. Se recomienda un mínimo de 75% para aprobar la cursada.
+      </p>
     </div>
   </div>
-  <div class="col-sm-6 col-lg-3">
-    <div class="card p-3">
-      <div class="text-muted small">% asistencia (Presente + Justificado)</div>
-      <div class="h4 mb-0">{{ kpis.porcentaje_asistencia }}%</div>
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Asistencia global</div>
+          <div class="h3 mb-0">{{ porcentaje_global }}%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Materias activas</div>
+          <div class="h3 mb-0">{{ materias_activas }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Inasistencias / Tardanzas</div>
+          <div class="h3 mb-0">{{ ausentes_totales }}</div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="col-sm-6 col-lg-2">
-    <div class="card p-3">
-      <div class="text-muted small">Presentes</div>
-      <div class="h4 mb-0">{{ kpis.presentes }}</div>
+
+  <!-- Detalle por materia -->
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <h2 class="h6 mb-3">Detalle por materia</h2>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Materia</th>
+              <th>Período</th>
+              <th class="text-center">% asistencia</th>
+              <th class="text-center">Presente</th>
+              <th class="text-center">Justificado</th>
+              <th class="text-center">Ausente/Tardanza</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for item in detalle_materias %}
+            <tr>
+              <td>{{ item.cursada.materia.nombre }}</td>
+              <td>{{ item.cursada.periodo }}</td>
+              <td class="text-center">
+                <span class="badge {% if item.porcentaje < 75 %}bg-danger{% else %}bg-success{% endif %}">
+                  {{ item.porcentaje }}%
+                </span>
+              </td>
+              <td class="text-center small">{{ item.presentes }}</td>
+              <td class="text-center small">{{ item.justificados }}</td>
+              <td class="text-center small">{{ item.ausentes }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted small py-3">
+                No se encontraron métricas para mostrar.
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
     </div>
   </div>
-  <div class="col-sm-6 col-lg-2">
-    <div class="card p-3">
-      <div class="text-muted small">Justificados</div>
-      <div class="h4 mb-0">{{ kpis.justificados }}</div>
-    </div>
-  </div>
-  <div class="col-sm-6 col-lg-2">
-    <div class="card p-3">
-      <div class="text-muted small">Ausentes / Tardanzas</div>
-      <div class="h5 mb-0">{{ kpis.ausentes }} / {{ kpis.tardanzas }}</div>
-    </div>
-  </div>
+
 </div>
-
-<div class="card p-3">
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <h6 class="mb-0">Mi asistencia por materia (%)</h6>
-    <small class="text-muted">Sólo tus materias</small>
-  </div>
-  <canvas id="chartAlumno" height="120"></canvas>
-  {% if not chart_labels %}
-    <p class="text-muted small mt-2 mb-0">Todavía no hay datos de asistencia registrados.</p>
-  {% endif %}
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  const alumnoLabels = {{ chart_labels|safe }};
-  const alumnoValues = {{ chart_values|safe }};
-
-  if (alumnoLabels.length) {
-    new Chart(document.getElementById('chartAlumno'), {
-      type: 'bar',
-      data: {
-        labels: alumnoLabels,
-        datasets: [{
-          label: '% asistencia',
-          data: alumnoValues
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            title: { display: true, text: '% asistencia' }
-          }
-        }
-      }
-    });
-  }
-</script>
 {% endblock %}
