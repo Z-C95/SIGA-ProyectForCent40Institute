@@ -35,7 +35,7 @@ def admin_dashboard(request):
 
 
 # =========================
-# Usuarios (lista/crear/editar)
+# Usuarios (lista/crear/editar/eliminar)
 # =========================
 @login_required
 @user_passes_test(is_admin)
@@ -129,9 +129,72 @@ def usuarios_editar(request, user_id):
     return render(request, "usuarios/editar.html", {"form": form, "usuario": usuario})
 
 
+@login_required
+@user_passes_test(is_admin)
+def usuarios_eliminar(request, user_id):
+    """Eliminar usuarios desde el listado (sólo por POST)."""
+    usuario = get_object_or_404(User, id=user_id)
+
+    if request.method != "POST":
+        messages.error(request, "Acción no permitida.")
+        return redirect("asistencias:usuarios_lista")
+
+    # Evitar que el admin se elimine a sí mismo
+    if request.user.id == usuario.id:
+        messages.error(request, "No podés eliminar tu propio usuario.")
+        return redirect("asistencias:usuarios_lista")
+
+    # Evitar borrar el último superusuario del sistema
+    if usuario.is_superuser and User.objects.filter(is_superuser=True).count() <= 1:
+        messages.error(request, "No podés eliminar el último superusuario.")
+        return redirect("asistencias:usuarios_lista")
+
+    usuario.delete()
+    messages.success(request, "Usuario eliminado correctamente.")
+    return redirect("asistencias:usuarios_lista")
+
+
 # =========================
 # Académico: Carreras / Materias
 # =========================
+@login_required
+@user_passes_test(is_admin)
+def carreras_lista(request):
+    carreras = Carrera.objects.all().order_by("nombre")
+    return render(request, "admin/carreras_lista.html", {"carreras": carreras})
+
+
+@login_required
+@user_passes_test(is_admin)
+def carrera_editar(request, carrera_id):
+    from ..forms import CarreraForm
+    carrera = get_object_or_404(Carrera, id=carrera_id)
+    if request.method == "POST":
+        form = CarreraForm(request.POST, instance=carrera)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Carrera actualizada correctamente.")
+            return redirect("asistencias:carreras_lista")
+        messages.error(request, "Revisá los datos del formulario.")
+    else:
+        form = CarreraForm(instance=carrera)
+    return render(request, "admin/carrera_form.html", {"form": form, "carrera": carrera})
+
+
+@login_required
+@user_passes_test(is_admin)
+def carrera_eliminar(request, carrera_id):
+    carrera = get_object_or_404(Carrera, id=carrera_id)
+
+    if request.method != "POST":
+        messages.error(request, "Acción no permitida.")
+        return redirect("asistencias:carreras_lista")
+
+    carrera.delete()
+    messages.success(request, "Carrera eliminada correctamente.")
+    return redirect("asistencias:carreras_lista")
+
+
 @login_required
 @user_passes_test(is_admin)
 def crear_carrera(request):
@@ -141,11 +204,66 @@ def crear_carrera(request):
         if form.is_valid():
             form.save()
             messages.success(request, "✅ Carrera creada correctamente.")
-            return redirect("asistencias:admin_cursadas")
+            return redirect("asistencias:carreras_lista")
         messages.error(request, "Revisá los datos del formulario.")
     else:
         form = CarreraForm()
-    return render(request, "admin/carrera_form.html", {"form": form})
+    return render(request, "admin/carrera_form.html", {"form": form, "carrera": None})
+
+
+@login_required
+@user_passes_test(is_admin)
+def materias_lista(request):
+    carrera_id = request.GET.get("carrera")
+    materias = (
+        Materia.objects
+        .select_related("carrera")
+        .all()
+        .order_by("carrera__nombre", "nombre")
+    )
+
+    if carrera_id:
+        materias = materias.filter(carrera_id=carrera_id)
+
+    carreras = Carrera.objects.all().order_by("nombre")
+
+    context = {
+        "materias": materias,
+        "carreras": carreras,
+        "carrera_id": str(carrera_id or ""),
+    }
+    return render(request, "admin/materias_lista.html", context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def materia_editar(request, materia_id):
+    from ..forms import MateriaForm
+    materia = get_object_or_404(Materia, id=materia_id)
+    if request.method == "POST":
+        form = MateriaForm(request.POST, instance=materia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Materia actualizada correctamente.")
+            return redirect("asistencias:materias_lista")
+        messages.error(request, "Revisá los datos del formulario.")
+    else:
+        form = MateriaForm(instance=materia)
+    return render(request, "admin/materia_form.html", {"form": form, "materia": materia})
+
+
+@login_required
+@user_passes_test(is_admin)
+def materia_eliminar(request, materia_id):
+    materia = get_object_or_404(Materia, id=materia_id)
+
+    if request.method != "POST":
+        messages.error(request, "Acción no permitida.")
+        return redirect("asistencias:materias_lista")
+
+    materia.delete()
+    messages.success(request, "Materia eliminada correctamente.")
+    return redirect("asistencias:materias_lista")
 
 
 @login_required
@@ -157,12 +275,88 @@ def crear_materia(request):
         if form.is_valid():
             form.save()
             messages.success(request, "✅ Materia creada correctamente.")
-            return redirect("asistencias:admin_cursadas")
+            return redirect("asistencias:materias_lista")
         messages.error(request, "Revisá los datos del formulario.")
     else:
         form = MateriaForm()
-    return render(request, "admin/materia_form.html", {"form": form})
+    return render(request, "admin/materia_form.html", {"form": form, "materia": None})
 
+# =========================
+# Detalle de Carrera
+# =========================
+@login_required
+@user_passes_test(is_admin)
+def carrera_detalle(request, carrera_id):
+    carrera = get_object_or_404(Carrera, id=carrera_id)
+
+    # Materias de la carrera + cantidad de alumnos inscriptos por materia
+    materias = (
+        Materia.objects
+        .filter(carrera=carrera)
+        .annotate(
+            total_alumnos=Count("alumnomateria__alumno", distinct=True)
+        )
+        .order_by("nombre")
+    )
+
+    # Alumnos inscriptos en cualquier materia de la carrera (sin repetir)
+    alumnos = (
+        Alumno.objects
+        .filter(alumnomateria__materia__carrera=carrera)
+        .distinct()
+        .order_by("apellido", "nombre")
+    )
+
+    context = {
+        "carrera": carrera,
+        "materias": materias,
+        "alumnos": alumnos,
+    }
+    return render(request, "admin/carrera_detalle.html", context)
+
+
+# =========================
+# Detalle de Materia
+# =========================
+@login_required
+@user_passes_test(is_admin)
+def materia_detalle(request, materia_id):
+    materia = get_object_or_404(Materia, id=materia_id)
+
+    # Cursadas (Docente + Período) de esa materia
+    cursadas = (
+        DocenteMateria.objects
+        .filter(materia=materia)
+        .select_related("docente", "periodo")
+        .order_by("periodo__id")
+    )
+
+    # Para cada cursada, contamos alumnos inscriptos en ese período
+    cursadas_datos = []
+    for dm in cursadas:
+        total_alumnos = AlumnoMateria.objects.filter(
+            materia=materia,
+            periodo=dm.periodo
+        ).count()
+        cursadas_datos.append({
+            "cursada": dm,
+            "total_alumnos": total_alumnos,
+        })
+
+    # Alumnos inscriptos en la materia (en cualquier período, sin repetir)
+    alumnos = (
+        Alumno.objects
+        .filter(alumnomateria__materia=materia)
+        .distinct()
+        .order_by("apellido", "nombre")
+    )
+
+    context = {
+        "materia": materia,
+        "cursadas_datos": cursadas_datos,
+        "alumnos": alumnos,
+    }
+    return render(request, "admin/materia_detalle.html", context)
 
 # =========================
 # Justificativos
@@ -289,6 +483,7 @@ def reportes_curso(request):
 
         # --- Intentar insertar logo institucional (opcional) ---
         # Ruta sugerida: <BASE_DIR>/static/img/logo.png
+        from pathlib import Path
         base_dir = Path(__file__).resolve().parents[2]  # .../modulo-asistencia-main
         logo_path = base_dir / "static" / "img" / "logo.png"
         start_row = 1
@@ -351,6 +546,7 @@ def reportes_curso(request):
             row += 1
 
         # --- Autoajuste de ancho de columnas (en base al contenido)
+        from openpyxl.utils import get_column_letter
         for col in range(1, 7):
             col_letter = get_column_letter(col)
             max_len = 0
@@ -364,6 +560,7 @@ def reportes_curso(request):
             ws.column_dimensions[col_letter].width = min(max(12, max_len + 2), 45)
 
         # --- Alineaciones
+        from openpyxl.styles import Alignment
         for r in ws.iter_rows(min_row=data_row_start, min_col=2, max_col=6, max_row=row - 1):
             for c in r:
                 c.alignment = Alignment(horizontal="center")
@@ -412,6 +609,156 @@ def admin_cursadas(request):
     )
     return render(request, "admin/cursadas.html", {"cursadas": cursadas})
 
+# =========================
+# Detalle de cursada
+# =========================
+@login_required
+@user_passes_test(is_admin)
+def cursada_detalle(request, cursada_id):
+    """Detalle de una cursada (DocenteMateria) con estadísticas de asistencia."""
+    from django.shortcuts import get_object_or_404
+    from django.db.models import Prefetch
+
+    dm = get_object_or_404(
+        DocenteMateria.objects.select_related("materia", "periodo", "docente"),
+        id=cursada_id,
+    )
+
+    # Alumnos inscriptos en esa materia/período, con sus asistencias prefetchadas
+    inscriptos = (
+        AlumnoMateria.objects
+        .filter(materia=dm.materia, periodo=dm.periodo)
+        .select_related("alumno", "alumno__user")
+        .prefetch_related("asistencia_set")
+        .order_by("alumno__apellido", "alumno__nombre")
+    )
+
+    datos = []
+    total_registros = 0
+    total_ok = 0  # presentes + justificados
+
+    for am in inscriptos:
+        qs = list(am.asistencia_set.all())
+        total = len(qs)
+        presentes = sum(1 for a in qs if a.estado == "Presente")
+        justificados = sum(1 for a in qs if a.estado == "Justificado")
+        ausentes = sum(1 for a in qs if a.estado in ["Ausente", "Tardanza"])
+        porcentaje = round(((presentes + justificados) / total * 100), 2) if total else 0
+
+        datos.append({
+            "alumno": am.alumno,
+            "dni": getattr(am.alumno, "dni", ""),
+            "total": total,
+            "presentes": presentes,
+            "justificados": justificados,
+            "ausentes": ausentes,
+            "porcentaje": porcentaje,
+        })
+
+        total_registros += total
+        total_ok += (presentes + justificados)
+
+    total_alumnos = len(datos)
+    porcentaje_global = round((total_ok / total_registros * 100), 2) if total_registros else 0
+
+    # ===== Exportar a Excel (XLSX) =====
+    export = request.GET.get("export")
+    if export == "xlsx" and datos:
+        try:
+            import openpyxl
+            from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+            from openpyxl.utils import get_column_letter
+        except ImportError:
+            messages.error(request, "Para exportar a Excel instalá 'openpyxl' (pip install openpyxl).")
+            return redirect(request.path)
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Asistencia cursada"
+
+        # Título
+        titulo = (
+            f"Asistencia — {dm.materia.nombre} / {dm.periodo.nombre} "
+            f"(Docente: {dm.docente})"
+        )
+        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=7)
+        cell_title = ws.cell(row=1, column=1, value=titulo)
+        cell_title.font = Font(bold=True, size=14)
+        cell_title.alignment = Alignment(horizontal="center")
+
+        # Encabezados
+        headers = ["Alumno", "DNI", "Total", "Presentes", "Justificados", "Ausentes", "% Asistencia"]
+        header_row = 3
+        for col, h in enumerate(headers, start=1):
+            c = ws.cell(row=header_row, column=col, value=h)
+            c.font = Font(bold=True, color="FFFFFF")
+            c.fill = PatternFill("solid", fgColor="111827")
+            c.alignment = Alignment(horizontal="center", vertical="center")
+            c.border = Border(
+                left=Side(style="thin", color="CCCCCC"),
+                right=Side(style="thin", color="CCCCCC"),
+                top=Side(style="thin", color="CCCCCC"),
+                bottom=Side(style="thin", color="CCCCCC"),
+            )
+
+        # Datos
+        row = header_row + 1
+        for d in datos:
+            ws.cell(row=row, column=1, value=str(d["alumno"]))
+            ws.cell(row=row, column=2, value=d["dni"])
+            ws.cell(row=row, column=3, value=d["total"])
+            ws.cell(row=row, column=4, value=d["presentes"])
+            ws.cell(row=row, column=5, value=d["justificados"])
+            ws.cell(row=row, column=6, value=d["ausentes"])
+            pcell = ws.cell(row=row, column=7, value=(d["porcentaje"] / 100.0))
+            pcell.number_format = "0.00%"
+
+            for col in range(1, 8):
+                ws.cell(row=row, column=col).border = Border(
+                    left=Side(style="thin", color="EEEEEE"),
+                    right=Side(style="thin", color="EEEEEE"),
+                    top=Side(style="thin", color="EEEEEE"),
+                    bottom=Side(style="thin", color="EEEEEE"),
+                )
+            row += 1
+
+        # Autoajuste de columnas
+        for col in range(1, 8):
+            col_letter = get_column_letter(col)
+            max_len = 0
+            for r in range(1, row):
+                val = ws.cell(row=r, column=col).value
+                if col == 7 and isinstance(val, (int, float)):
+                    val_str = f"{val:.2%}"
+                else:
+                    val_str = str(val) if val is not None else ""
+                max_len = max(max_len, len(val_str))
+            ws.column_dimensions[col_letter].width = min(max(12, max_len + 2), 45)
+
+        # Resumen al final
+        summary_row = row + 1
+        ws.cell(row=summary_row, column=1, value="Total alumnos:")
+        ws.cell(row=summary_row, column=2, value=total_alumnos)
+        ws.cell(row=summary_row + 1, column=1, value="% asistencia global:")
+        ws.cell(row=summary_row + 1, column=2, value=(porcentaje_global / 100.0)).number_format = "0.00%"
+
+        # Respuesta HTTP
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        filename = f"asistencia_cursada_{dm.id}.xlsx"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        wb.save(response)
+        return response
+
+    context = {
+        "cursada": dm,
+        "inscriptos": inscriptos,
+        "datos": datos,
+        "total_alumnos": total_alumnos,
+        "porcentaje_global": porcentaje_global,
+    }
+    return render(request, "admin/cursada_detalle.html", context)
 
 @login_required
 @user_passes_test(is_admin)

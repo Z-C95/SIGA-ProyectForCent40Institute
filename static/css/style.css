@@ -1,6 +1,11 @@
-/* estilos propios */ 
+/* ================================
+   ESTILOS PROPIOS SIGA
+   ================================ */
+
 /* Tabla: compacta, con hover claro */
-.table.table-striped tr:hover { filter: brightness(0.98); }
+.table.table-striped tr:hover { 
+    filter: brightness(0.98); 
+}
 
 /* Badges de estado de asistencia */
 .badge-presente { background:#16a34a; }
@@ -9,14 +14,134 @@
 .badge-tardanza { background:#f59e0b; }
 
 /* Resaltar alumnos con % bajo (ej. < 75%) */
-.riesgo { background: #fff4f4 !important; }
-.riesgo td:last-child { color:#dc2626; font-weight:700; }
+.riesgo { 
+    background: #fff4f4 !important; 
+}
+.riesgo td:last-child { 
+    color:#dc2626; 
+    font-weight:700; 
+}
 
-/* Botón flotante para acciones frecuentes (ej: “Subir certificado”) */
+/* ================================
+   BOTÓN FLOTANTE (ej: Subir Certificado)
+   ================================ */
 .btn-flotante {
-  position: fixed; right: 20px; bottom: 20px; z-index: 9999;
-  padding: 10px 16px; border-radius: 999px; box-shadow: 0 8px 20px rgba(0,0,0,.15);
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 9999;
+    padding: 10px 16px;
+    border-radius: 999px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.15);
 }
 
 /* Footer más fino en mobile */
-footer { font-size: .85rem; }
+footer { 
+    font-size: .85rem; 
+}
+
+/* ================================
+   LOGIN — INPUTS Y FORMULARIO
+   ================================ */
+
+/* Fondo del icono del input */
+.input-group-text {
+    background-color: #e7e6ff !important;
+    border-radius: 0.5rem 0 0 0.5rem !important;
+}
+
+/* Bordes de los inputs */
+input[type="text"],
+input[type="password"] {
+    border-radius: 0 0.5rem 0.5rem 0 !important;
+}
+
+/* Botón primario del login */
+.btn-primary {
+    background-color: #3b3dd1 !important;
+    border-color: #3b3dd1 !important;
+}
+
+/* Inputs centrados */
+.input-group {
+    justify-content: center;
+}
+
+.input-group input {
+    max-width: 220px;
+}
+
+/* Checkbox centrado */
+.form-check {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* ================================
+   RESPONSIVE (MOBILE FIRST)
+   ================================ */
+
+@media (max-width: 767.98px) {
+
+    /* Padding general */
+    .content {
+        padding: 16px !important;
+    }
+
+    /* Tablas más compactas */
+    table.table {
+        font-size: 0.85rem;
+    }
+
+    table.table th,
+    table.table td {
+        padding: 0.35rem 0.4rem;
+        vertical-align: middle;
+    }
+
+    /* Botón flotante ajustado */
+    .btn-flotante {
+        right: 12px;
+        bottom: 12px;
+        padding: 8px 14px;
+        font-size: 0.9rem;
+    }
+
+    /* Cards más redondeadas */
+    .card {
+        border-radius: 0.75rem;
+    }
+
+    /* Navbar más proporcionada */
+    .navbar .navbar-brand {
+        font-size: 1rem;
+    }
+
+    .navbar .btn-sm,
+    .navbar .navbar-text {
+        font-size: 0.8rem;
+    }
+}
+
+/* Padding extra en pantallas grandes */
+@media (min-width: 1200px) {
+    .content {
+        padding: 32px !important;
+    }
+}
+
+.input-group input[type="email"] {
+    max-width: 260px;
+}
+
+/* Formularios de autenticación */
+.input-group-text {
+    background-color: #e7e6ff !important;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+    border-radius: 0.5rem !important;
+}

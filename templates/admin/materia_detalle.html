@@ -1,0 +1,99 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Detalle de materia{% endblock %}
+
+{% block content %}
+
+<h1 class="h4 mb-3">Detalle de materia</h1>
+
+<div class="card mb-4 shadow-sm border-0">
+  <div class="card-body">
+    <p class="mb-1"><strong>Materia:</strong> {{ materia.nombre }}</p>
+    <p class="mb-1"><strong>Código:</strong> {{ materia.codigo }}</p>
+
+    {% if materia.carrera %}
+      <p class="mb-1">
+        <strong>Carrera:</strong>
+        <a href="{% url 'asistencias:carrera_detalle' materia.carrera.id %}" class="text-decoration-none">
+          {{ materia.carrera.nombre }}
+        </a>
+      </p>
+    {% endif %}
+
+    <div class="mt-3 d-flex flex-wrap gap-2">
+      <a href="{% url 'asistencias:materias_lista' %}" class="btn btn-sm btn-outline-secondary">
+        ← Volver al listado de materias
+      </a>
+      <a href="{% url 'asistencias:admin_cursadas' %}" class="btn btn-sm btn-outline-primary">
+        Gestionar cursadas (docentes / alumnos)
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Cursadas (período / docente / cantidad de alumnos) -->
+<div class="card mb-4 shadow-sm border-0">
+  <div class="card-body">
+    <h2 class="h5 mb-3">Detalle de Cursada</h2>
+
+    {% if cursadas_datos %}
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-dark text-center">
+          <tr>
+            <th>Período</th>
+            <th>Docente</th>
+            <th>Cant. alumnos inscriptos</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for item in cursadas_datos %}
+          <tr>
+            <td class="text-center">{{ item.cursada.periodo.nombre }}</td>
+            <td>{{ item.cursada.docente.apellido }}, {{ item.cursada.docente.nombre }}</td>
+            <td class="text-center">{{ item.total_alumnos }}</td>
+            <td class="text-center">
+              <a href="{% url 'asistencias:cursada_detalle' item.cursada.id %}" class="btn btn-sm btn-outline-secondary">
+                Ver detalle
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="text-muted mb-0">
+        No hay cursadas registradas para esta materia (asignación docente + período).
+      </p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Alumnos inscriptos en la materia (en cualquier período) -->
+<div class="card shadow-sm border-0">
+  <div class="card-body">
+    <h2 class="h5 mb-3">Alumnos inscriptos en la materia</h2>
+
+    {% if alumnos %}
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-dark text-center">
+          <tr>
+            <th>Apellido y nombre</th>
+            <th>DNI</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for a in alumnos %}
+          <tr>
+            <td>{{ a.apellido }}, {{ a.nombre }}</td>
+            <td class="text-center">{{ a.dni }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="text-muted mb-0">No hay alumnos inscriptos en esta materia.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

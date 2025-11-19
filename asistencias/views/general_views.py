@@ -13,27 +13,27 @@ from ..forms import (
 )
 
 
-def home(request):
-    """
-    Redirección por rol:
-      - ADMIN   -> panel de cursadas (admin)
-      - DOCENTE -> listado de cursos del docente
-      - ALUMNO  -> consulta de asistencias del alumno
-      - Invitado-> home genérico
-    """
-    if not request.user.is_authenticated:
-        return render(request, "home.html")
+# asistencias/views/general_views.py
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 
-    rol = getattr(request.user, "rol", "")
-    if rol == User.Rol.ADMIN:
-        return redirect("asistencias:admin_cursadas")
-    if rol == User.Rol.DOCENTE:
+@login_required
+def home(request):
+    # Redirecciones según rol
+    if getattr(request.user, "rol", None) == "ADMIN":
+        # ADMIN → Dashboard
+        return redirect("asistencias:admin_dashboard")
+
+    if getattr(request.user, "rol", None) == "DOCENTE":
+        # DOCENTE → cursos del docente
         return redirect("asistencias:cursos_docente")
-    if rol == User.Rol.ALUMNO:
+
+    if getattr(request.user, "rol", None) == "ALUMNO":
+        # ALUMNO → vista de asistencias
         return redirect("asistencias:consulta_asistencia")
 
+    # Por si hay algún usuario sin rol definido
     return render(request, "home.html")
-
 
 # ============================================================
 # PERFIL: actualización de datos del usuario (docente/alumno)

@@ -1,0 +1,104 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Detalle de cursada{% endblock %}
+
+{% block content %}
+
+<h1 class="h4 mb-3">Detalle de cursada</h1>
+
+<div class="card mb-4 shadow-sm border-0">
+  <div class="card-body">
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <p class="mb-1"><strong>Materia:</strong> {{ cursada.materia.nombre }}</p>
+
+        {% if cursada.materia.carrera %}
+          <p class="mb-1"><strong>Carrera:</strong> {{ cursada.materia.carrera.nombre }}</p>
+        {% endif %}
+
+        <p class="mb-1"><strong>Período:</strong> {{ cursada.periodo.nombre }}</p>
+      </div>
+
+      <div class="col-md-6">
+        <p class="mb-1"><strong>Docente asignado:</strong> {{ cursada.docente.apellido }}, {{ cursada.docente.nombre }}</p>
+        <p class="mb-1"><strong>Código materia:</strong> {{ cursada.materia.codigo }}</p>
+      </div>
+    </div>
+
+    <!-- Resumen rápido -->
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <span class="badge bg-primary rounded-pill px-3 py-2">
+          Total alumnos: {{ total_alumnos }}
+        </span>
+      </div>
+      <div class="col-md-4">
+        <span class="badge bg-success rounded-pill px-3 py-2">
+          % asistencia global: {{ porcentaje_global }}%
+        </span>
+      </div>
+    </div>
+
+    <!-- Acciones directas -->
+    <div class="d-flex flex-wrap gap-2 mt-2">
+      <a href="{% url 'asistencias:admin_cursadas' %}" class="btn btn-sm btn-outline-secondary">
+        ← Volver a cursadas
+      </a>
+
+      <a href="{% url 'asistencias:asignar_docente' %}" class="btn btn-sm btn-outline-primary">
+        Asignar docente
+      </a>
+
+      <a href="{% url 'asistencias:inscribir_alumnos' %}" class="btn btn-sm btn-outline-primary">
+        Inscribir alumnos
+      </a>
+
+      <a href="?export=xlsx" class="btn btn-sm btn-success">
+        Exportar asistencia a Excel
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- Grilla de alumnos con estado de asistencia -->
+<div class="card shadow-sm border-0">
+  <div class="card-body">
+    <h2 class="h5 mb-3">Alumnos inscriptos y asistencia</h2>
+
+    {% if datos %}
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="table-dark text-center">
+            <tr>
+              <th>Apellido y nombre</th>
+              <th>DNI</th>
+              <th>Total clases</th>
+              <th>Presentes</th>
+              <th>Justificados</th>
+              <th>Ausentes / Tardanzas</th>
+              <th>% Asistencia</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for d in datos %}
+            <tr>
+              <td>{{ d.alumno.apellido }}, {{ d.alumno.nombre }}</td>
+              <td class="text-center">{{ d.dni }}</td>
+              <td class="text-center">{{ d.total }}</td>
+              <td class="text-center">{{ d.presentes }}</td>
+              <td class="text-center">{{ d.justificados }}</td>
+              <td class="text-center">{{ d.ausentes }}</td>
+              <td class="text-center">{{ d.porcentaje }}%</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted mb-0">No hay alumnos inscriptos en esta cursada.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

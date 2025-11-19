@@ -1,0 +1,86 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Detalle de carrera{% endblock %}
+
+{% block content %}
+
+<h1 class="h4 mb-3">Detalle de carrera</h1>
+
+<div class="card mb-4 shadow-sm border-0">
+  <div class="card-body">
+    <p class="mb-1"><strong>Carrera:</strong> {{ carrera.nombre }}</p>
+    <p class="mb-1"><strong>Código:</strong> {{ carrera.codigo }}</p>
+
+    <div class="mt-3 d-flex gap-2">
+      <a href="{% url 'asistencias:carreras_lista' %}" class="btn btn-sm btn-outline-secondary">
+        ← Volver al listado de carreras
+      </a>
+      <a href="{% url 'asistencias:admin_cursadas' %}" class="btn btn-sm btn-outline-primary">
+        Gestionar cursadas (docentes / alumnos)
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Materias de la carrera -->
+<div class="card mb-4 shadow-sm border-0">
+  <div class="card-body">
+    <h2 class="h5 mb-3">Materias de la carrera</h2>
+
+    {% if materias %}
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-dark text-center">
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Cant. alumnos inscriptos</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for m in materias %}
+          <tr>
+            <td class="text-center">{{ m.codigo }}</td>
+            <td>
+              <a href="{% url 'asistencias:materia_detalle' m.id %}" class="text-decoration-none">
+                {{ m.nombre }}
+              </a>
+            </td>
+            <td class="text-center">{{ m.total_alumnos }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="text-muted mb-0">No hay materias registradas para esta carrera.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Alumnos vinculados a la carrera (en alguna materia) -->
+<div class="card shadow-sm border-0">
+  <div class="card-body">
+    <h2 class="h5 mb-3">Alumnos vinculados a la carrera</h2>
+
+    {% if alumnos %}
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-dark text-center">
+          <tr>
+            <th>Apellido y nombre</th>
+            <th>DNI</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for a in alumnos %}
+          <tr>
+            <td>{{ a.apellido }}, {{ a.nombre }}</td>
+            <td class="text-center">{{ a.dni }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="text-muted mb-0">No hay alumnos inscriptos en materias de esta carrera.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

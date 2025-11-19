@@ -1,47 +1,70 @@
-{% extends "layouts/base_admin.html" %}
-{% block title %}Iniciar sesión{% endblock %}
+{% extends "layouts/base_auth.html" %}
+{% load static %}
+{% block title %}Iniciar sesión — SIGA{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-center align-items-center" style="min-height:80vh;">
-  <div class="col-11 col-sm-8 col-md-5 col-lg-4">
-    <form method="post" class="card p-4 shadow-sm border-0">
-      {% csrf_token %}
-      <h1 class="h4 mb-3 text-center fw-bold">Iniciar sesión</h1>
 
-      {% if form.errors %}
-        <div class="alert alert-danger text-center py-2">
-          Usuario o contraseña incorrectos.
+<div class="text-center mb-4">
+  <img src="{% static 'img/siga_logo.png' %}" 
+       alt="SIGA — Gestión Académica"
+       style="width: 110px; border-radius: 12px;">
+  <h1 class="h4 mt-3 mb-0">Sistema de Gestión Académica</h1>
+  <p class="text-muted small mb-0">Módulo de asistencias</p>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body p-4">
+
+    <h2 class="h5 text-center mb-4">Iniciar sesión</h2>
+
+    <!-- CONTENEDOR CENTRADO -->
+    <div class="text-center">
+
+      <form method="post" action="{% url 'login' %}" style="max-width: 300px; margin: auto;">
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        <!-- Usuario -->
+        <div class="mb-3">
+          <label class="form-label d-block text-start">Usuario</label>
+          <div class="input-group justify-content-center">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            {{ form.username }}
+          </div>
         </div>
-      {% endif %}
 
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags|default:'info' }} mb-2">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
+        <!-- Contraseña -->
+        <div class="mb-3">
+          <label class="form-label d-block text-start">Contraseña</label>
+          <div class="input-group justify-content-center">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            {{ form.password }}
+          </div>
+        </div>
 
-      <div class="mb-3">
-        <label class="form-label">Usuario</label>
-        <input type="text" name="username" class="form-control" placeholder="Tu usuario" required autofocus>
-      </div>
+        <!-- Recordarme -->
+        <div class="form-check mb-3 text-center">
+          <input class="form-check-input" type="checkbox" name="remember_me" id="id_remember_me">
+          <label class="form-check-label" for="id_remember_me">
+            Recordarme en este dispositivo
+          </label>
+        </div>
 
-      <div class="mb-3">
-        <label class="form-label">Contraseña</label>
-        <input type="password" name="password" class="form-control" placeholder="Tu contraseña" required>
-      </div>
+        <button class="btn btn-primary w-100">
+          <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+        </button>
 
-      <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" name="remember_me" id="remember_me">
-        <label class="form-check-label" for="remember_me">
-          Recordarme en este dispositivo
-        </label>
-      </div>
+        <div class="text-center mt-3">
+          <a href="{% url 'asistencias:password_reset' %}">¿Olvidaste tu contraseña?</a>
+        </div>
 
-      <button class="btn btn-primary w-100 mb-2" type="submit">Entrar</button>
+      </form>
 
-      <div class="text-center small">
-        <a href="{% url 'asistencias:password_reset' %}">¿Olvidaste tu contraseña?</a>
-      </div>
-    </form>
+    </div>
+    <!-- FIN CONTENEDOR CENTRADO -->
+
   </div>
 </div>
+
 {% endblock %}

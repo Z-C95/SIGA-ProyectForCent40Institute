@@ -1,0 +1,80 @@
+{% extends "layouts/base_admin.html" %}
+{% block title %}Materias{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Materias</h1>
+
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="{% url 'asistencias:crear_materia' %}">
+      <i class="bi bi-plus-lg me-1"></i> Nueva materia
+    </a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'asistencias:admin_cursadas' %}">
+      Gestionar cursadas (docentes / alumnos)
+    </a>
+  </div>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-sm-6 col-md-4">
+    <label class="form-label">Carrera</label>
+    <select name="carrera" class="form-select" onchange="this.form.submit()">
+      <option value="">Todas</option>
+      {% for c in carreras %}
+        <option value="{{ c.id }}" {% if carrera_id == c.id|stringformat:"s" %}selected{% endif %}>
+          {{ c.nombre }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+
+<table class="table table-bordered table-striped align-middle">
+  <thead class="table-dark text-center">
+    <tr>
+      <th style="width:120px;">Código</th>
+      <th>Nombre</th>
+      <th>Carrera</th>
+      <th style="width:160px;">Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for m in materias %}
+    <tr>
+      <td class="text-center">{{ m.codigo }}</td>
+      <td>
+        <a href="{% url 'asistencias:materia_detalle' m.id %}"
+           class="text-decoration-none">
+          {{ m.nombre }}
+        </a>
+      </td>
+      <td>{{ m.carrera.nombre }}</td>
+      <td class="text-center">
+        <div class="btn-group" role="group" aria-label="Acciones materia">
+          <a href="{% url 'asistencias:materia_editar' m.id %}"
+             class="btn btn-sm btn-outline-primary"
+             title="Editar materia">
+            <i class="bi bi-pencil"></i>
+          </a>
+
+          <form method="post"
+                action="{% url 'asistencias:materia_eliminar' m.id %}"
+                style="display:inline;"
+                onsubmit="return confirm('¿Seguro que querés eliminar esta materia?');">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-sm btn-outline-danger"
+                    title="Eliminar materia">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
+        </div>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4" class="text-center text-muted">No hay materias registradas.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

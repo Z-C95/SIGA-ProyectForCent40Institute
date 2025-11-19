@@ -25,7 +25,11 @@
   <tbody>
   {% for c in cursadas %}
     <tr>
-      <td>{{ c.materia.nombre }}</td>
+      <td>
+        <a href="{% url 'asistencias:cursada_detalle' c.id %}" class="text-decoration-none">
+          {{ c.materia.nombre }}
+        </a>
+      </td>
       <td>{{ c.periodo.nombre }}</td>
       <td>{{ c.docente.apellido }}, {{ c.docente.nombre }}</td>
     </tr>

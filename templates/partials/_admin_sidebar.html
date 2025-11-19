@@ -6,10 +6,6 @@
      href="{% url 'asistencias:admin_cursadas' %}">
     Cursadas
   </a>
-  <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
-     href="{% url 'asistencias:admin_dashboard' %}">
-    Dashboard
-  </a>
 
   <span class="text-uppercase text-muted small px-2 mt-3">Usuarios</span>
   <a class="nav-link {% if request.resolver_match.url_name == 'usuarios_lista' %}active{% endif %}"

@@ -1,8 +1,10 @@
 {% extends "layouts/base_admin.html" %}
-{% block title %}Nueva materia{% endblock %}
+{% block title %}{% if materia %}Editar materia{% else %}Nueva materia{% endif %}{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-3">Nueva materia</h1>
+<h1 class="h4 mb-3">
+  {% if materia %}Editar materia{% else %}Nueva materia{% endif %}
+</h1>
 
 <form method="post" class="card p-3">
   {% csrf_token %}
@@ -23,14 +25,14 @@
   </div>
 
   <div class="mb-3">
-    <label class="form-label" for "{{ form.codigo.id_for_label }}">Código</label>
+    <label class="form-label" for="{{ form.codigo.id_for_label }}">Código</label>
     {{ form.codigo }}
     {{ form.codigo.errors }}
   </div>
 
   <div class="d-flex gap-2">
     <button type="submit" class="btn btn-primary">Guardar</button>
-    <a href="{% url 'asistencias:admin_cursadas' %}" class="btn btn-secondary">Volver</a>
+    <a href="{% url 'asistencias:materias_lista' %}" class="btn btn-secondary">Volver</a>
   </div>
 </form>
 {% endblock %}
