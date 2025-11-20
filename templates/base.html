@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}SIGA — Admin{% endblock %}</title>
+  <title>{% block title %}SIGA — Plataforma{% endblock %}</title>
 
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -28,12 +28,13 @@
       <!-- LADO DERECHO DEL NAVBAR -->
       <div class="d-flex align-items-center gap-2">
 
-        <!-- (Opcional) Botón modo oscuro: si lo usás con JS -->
+        <!-- Botón modo oscuro (manejado por JS + cookie) -->
         <button id="darkModeToggle" type="button" class="btn btn-outline-light btn-sm">
           Modo oscuro
         </button>
 
         {% if request.user.is_authenticated %}
+
           <!-- Texto de bienvenida -->
           <span class="navbar-text me-2 d-none d-sm-inline">
             Hola, {{ request.user.first_name|default:request.user.username }}
@@ -44,15 +45,23 @@
             Perfil
           </a>
 
-          <!-- Cerrar sesión por GET: SIN CSRF, SIN 403 -->
-          <a href="{% url 'asistencias:logout' %}" class="btn btn-danger btn-sm">
-            Cerrar sesión
-          </a>
+          <!-- BOTÓN DE CERRAR SESIÓN - POST + CSRF (Django 5 compatible) -->
+          <form method="post"
+                action="{% url 'asistencias:logout' %}"
+                class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">
+              Cerrar sesión
+            </button>
+          </form>
+
         {% else %}
+
           <!-- Si no está logueado, mostrar botón de login -->
           <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">
             Iniciar sesión
           </a>
+
         {% endif %}
 
       </div>
@@ -63,92 +72,126 @@
     <div class="row">
 
       {% if request.user.is_authenticated %}
-        <!-- SIDEBAR IZQUIERDO (solo si está logueado) -->
+        <!-- SIDEBAR IZQUIERDO -->
         <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse show" id="sidebarMenu">
           <div class="position-sticky pt-3 sidebar-sticky">
+
             <ul class="nav flex-column mb-3">
+
+              <!-- Siempre disponible -->
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'asistencias:home' %}">
                   Inicio
                 </a>
               </li>
 
-              <!-- Opciones Admin -->
-              {% if request.user.is_staff %}
+              {% if request.user.is_staff or request.user.rol == "ADMIN" %}
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'asistencias:admin_dashboard' %}">
                     Dashboard Admin
                   </a>
                 </li>
+
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'asistencias:usuarios_lista' %}">
                     Usuarios
                   </a>
                 </li>
+
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'asistencias:carreras_lista' %}">
                     Carreras
                   </a>
                 </li>
+
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'asistencias:materias_lista' %}">
                     Materias
                   </a>
                 </li>
+
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'asistencias:admin_cursadas' %}">
                     Cursadas
                   </a>
                 </li>
+
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'asistencias:lista_justificativos' %}">
                     Justificativos
                   </a>
                 </li>
+
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'asistencias:reportes_curso' %}">
                     Reportes
                   </a>
                 </li>
+
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'asistencias:admin_metricas' %}">
                     Métricas Admin
                   </a>
                 </li>
-              {% endif %}
 
-              <!-- (Ejemplo) Opciones Docente/Alumno si luego agregás flags -->
-              {# 
-              {% if user_es_docente %}
+              {% elif request.user.rol == "DOCENTE" %}
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'asistencias:docente_dashboard' %}">
-                    Dashboard Docente
+                    Panel docente
                   </a>
                 </li>
-              {% endif %}
 
-              {% if user_es_alumno %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:cursos_docente' %}">
+                    Mis cursos
+                  </a>
+                </li>
+
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:docente_metricas' %}">
+                    Métricas
+                  </a>
+                </li>
+
+              {% elif request.user.rol == "ALUMNO" %}
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'asistencias:alumno_dashboard' %}">
-                    Dashboard Alumno
+                    Mi panel
                   </a>
                 </li>
+
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:consulta_asistencia' %}">
+                    Mis asistencias
+                  </a>
+                </li>
+
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:subir_certificado' %}">
+                    Subir justificativo
+                  </a>
+                </li>
+
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'asistencias:alumno_metricas' %}">
+                    Métricas
+                  </a>
+                </li>
+
               {% endif %}
-              #}
             </ul>
+
           </div>
         </nav>
 
-        <!-- Si está autenticado, el main ocupa 9/12 -->
-        {% if request.user.is_authenticated %}
-          <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-        {% else %}
-          <main class="col-12 px-3 py-4">
-        {% endif %}
+        <!-- CONTENIDO PRINCIPAL SI ESTÁ AUTENTICADO -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
 
       {% else %}
-        <!-- Si NO está autenticado, no hay sidebar y el main ocupa todo -->
+
+        <!-- SIN LOGIN: CONTENIDO A ANCHO COMPLETO -->
         <main class="col-12 px-3 py-4">
+
       {% endif %}
 
         {% block content %}
@@ -159,7 +202,7 @@
     </div>
   </div>
 
-  <!-- FOOTER SIMPLE -->
+  <!-- FOOTER -->
   <footer class="text-center py-3 mt-4 border-top small">
     Sistema de Gestión Académica — Módulo de Asistencias · CENT 40
   </footer>
@@ -167,8 +210,45 @@
   <!-- JS Bootstrap -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- JS propio (si lo usás para el modo oscuro, etc.) -->
+  <!-- JS propio -->
   <script src="{% static 'js/main.js' %}"></script>
+
+  <!-- Script Modo Oscuro: sincroniza botón, clase y cookie 'dark_mode' -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const toggle = document.getElementById('darkModeToggle');
+      const body = document.body;
+
+      if (!toggle) return;
+
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+      }
+
+      function setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+          const date = new Date();
+          date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+          expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "") + expires + "; path=/";
+      }
+
+      // Estado inicial según cookie
+      const darkCookie = getCookie('dark_mode');
+      if (darkCookie === 'true') {
+        body.classList.add('dark-mode');
+      }
+
+      toggle.addEventListener('click', function () {
+        const isDark = body.classList.toggle('dark-mode');
+        setCookie('dark_mode', isDark ? 'true' : 'false', 365);
+      });
+    });
+  </script>
 
 </body>
 </html>
