@@ -1,4 +1,4 @@
-# SIGA — Sistema Integral de Gestión de Asistencias
+# SIGA — Sistema Integral de Gestión Académica
 Proyecto Final — Instituto de Formación Profesional CENT40  
 Tecnicatura en Análisis y Desarrollo de Sistemas Informáticos  
 Año: 2024/2025
