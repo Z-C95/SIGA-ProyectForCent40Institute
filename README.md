@@ -16,8 +16,10 @@ El sistema permite gestionar usuarios, docentes, alumnos, materias, cursadas, re
 ## 2. Objetivos del Sistema
 
 - Gestionar
-
-
+- Optimizar
+- Simplificar
+- Efectivizar
+- Sistematizar
 
 
 
