@@ -9,7 +9,7 @@ Año: 2024/2025
 
 El Sistema Integral de Gestión de Asistencias (SIGA) es una aplicación web desarrollada con Django 5 cuyo objetivo es brindar una solución eficiente, segura y escalable para la administración académica de asistencias en instituciones educativas.
 
-El sistema permite gestionar usuarios, docentes, alumnos, materias, cursadas, registros de asistencia, justificativos y reportes statistiques. Está diseñado bajo criterios de modularidad, mantenibilidad y alineado a buenas prácticas de desarrollo.
+El sistema permite gestionar usuarios, docentes, alumnos, materias, cursadas, registros de asistencia, justificativos y reportes estadísticos. Está diseñado bajo criterios de modularidad, mantenibilidad y alineado a buenas prácticas de desarrollo.
 
 ---
 
