@@ -1,10 +1,101 @@
 {% extends "base.html" %}
-{% block title %}Inicio{% endblock %}
+{% block title %}Inicio - SIGA{% endblock %}
+
 {% block content %}
-<div class="text-center py-5">
-  <h1>Bienvenido a SIGA</h1>
-  {% if not user.is_authenticated %}
-  <p class="lead mt-3"><a href="{% url 'login' %}" class="btn btn-primary">Iniciar sesión</a></p>
-  {% endif %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8">
+      
+      <div class="text-center py-5">
+        
+        <!-- Ícono grande -->
+        <div class="mb-4">
+          <i class="fas fa-graduation-cap fa-5x text-primary"></i>
+        </div>
+        
+        <!-- Título -->
+        <h1 class="display-4 mb-3">Bienvenido a SIGA</h1>
+        <p class="lead text-muted">
+          Sistema Integral de Gestión Académica
+        </p>
+        
+        {% if not user.is_authenticated %}
+          <!-- Botón de login si no está autenticado -->
+          <div class="mt-4">
+            <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+              <i class="fas fa-sign-in-alt"></i> Iniciar sesión
+            </a>
+          </div>
+        {% else %}
+          <!-- Si está autenticado, mostrar información según rol -->
+          <div class="mt-5">
+            <div class="card shadow-sm">
+              <div class="card-body p-4">
+                <h3 class="card-title mb-3">
+                  <i class="fas fa-user-circle"></i> 
+                  Hola, {{ request.user.first_name|default:request.user.username }}
+                </h3>
+                
+                <p class="card-text text-muted mb-4">
+                  Rol: <span class="badge bg-primary">{{ request.user.get_rol_display|default:"Usuario" }}</span>
+                </p>
+                
+                <!-- Accesos rápidos según rol -->
+                <div class="row g-3">
+                  
+                  {% if request.user.is_staff or request.user.rol == "ADMIN" %}
+                    <div class="col-12 col-sm-6">
+                      <a href="{% url 'asistencias:admin_dashboard' %}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard Admin
+                      </a>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <a href="{% url 'asistencias:usuarios_lista' %}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-users"></i> Gestionar Usuarios
+                      </a>
+                    </div>
+                  
+                  {% elif request.user.rol == "DOCENTE" %}
+                    <div class="col-12 col-sm-6">
+                      <a href="{% url 'asistencias:docente_dashboard' %}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-chalkboard"></i> Mi Panel
+                      </a>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <a href="{% url 'asistencias:cursos_docente' %}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-book"></i> Mis Cursos
+                      </a>
+                    </div>
+                  
+                  {% elif request.user.rol == "ALUMNO" %}
+                    <div class="col-12 col-sm-6">
+                      <a href="{% url 'asistencias:alumno_dashboard' %}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-user-graduate"></i> Mi Panel
+                      </a>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <a href="{% url 'asistencias:consulta_asistencia' %}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-clipboard-check"></i> Mis Asistencias
+                      </a>
+                    </div>
+                  
+                  {% else %}
+                    <div class="col-12">
+                      <a href="{% url 'asistencias:editar_perfil' %}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-user-edit"></i> Editar Perfil
+                      </a>
+                    </div>
+                  {% endif %}
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+        
+      </div>
+      
+    </div>
+  </div>
 </div>
 {% endblock %}

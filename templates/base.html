@@ -5,65 +5,82 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}SIGA — Plataforma{% endblock %}</title>
+  <title>{% block title %}SIGA - Sistema de Gestión Académica{% endblock %}</title>
 
-  <!-- Bootstrap -->
+  <!-- Bootstrap 5 (responsive por defecto) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- CSS propio -->
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+  <!-- Font Awesome para íconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+  <!-- Tu CSS personalizado -->
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
+  {% block extra_css %}{% endblock %}
 </head>
 
 <body class="{% if request.COOKIES.dark_mode == 'true' %}dark-mode{% endif %}">
 
-  <!-- NAVBAR SUPERIOR -->
-  <nav class="navbar navbar-dark bg-dark">
-    <div class="container-fluid d-flex justify-content-between align-items-center">
+  <!-- NAVBAR SUPERIOR CON MENÚ HAMBURGUESA -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
 
-      <!-- LOGO SIGA redirige al home -->
-      <a class="navbar-brand brand" href="{% url 'asistencias:home' %}">
-        SIGA
+      <!-- LOGO SIGA -->
+      <a class="navbar-brand" href="{% url 'asistencias:home' %}">
+        <i class="fas fa-graduation-cap"></i> SIGA
       </a>
 
-      <!-- LADO DERECHO DEL NAVBAR -->
-      <div class="d-flex align-items-center gap-2">
+      <!-- Botón hamburguesa para móvil -->
+      <button class="navbar-toggler" type="button" 
+              data-bs-toggle="collapse" 
+              data-bs-target="#navbarContent" 
+              aria-controls="navbarContent" 
+              aria-expanded="false" 
+              aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-        <!-- Botón modo oscuro (manejado por JS + cookie) -->
-        <button id="darkModeToggle" type="button" class="btn btn-outline-light btn-sm">
-          Modo oscuro
-        </button>
+      <!-- Menú colapsable -->
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <div class="ms-auto d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 mt-3 mt-lg-0">
 
-        {% if request.user.is_authenticated %}
+          <!-- Botón modo oscuro -->
+          <button id="darkModeToggle" type="button" class="btn btn-outline-light btn-sm">
+            <i class="fas fa-moon"></i> Modo oscuro
+          </button>
 
-          <!-- Texto de bienvenida -->
-          <span class="navbar-text me-2 d-none d-sm-inline">
-            Hola, {{ request.user.first_name|default:request.user.username }}
-          </span>
+          {% if request.user.is_authenticated %}
 
-          <!-- Botón Perfil -->
-          <a href="{% url 'asistencias:editar_perfil' %}" class="btn btn-outline-light btn-sm">
-            Perfil
-          </a>
+            <!-- Texto de bienvenida -->
+            <span class="navbar-text">
+              <i class="fas fa-user"></i> Hola, {{ request.user.first_name|default:request.user.username }}
+            </span>
 
-          <!-- BOTÓN DE CERRAR SESIÓN - POST + CSRF (Django 5 compatible) -->
-          <form method="post"
-                action="{% url 'asistencias:logout' %}"
-                class="d-inline">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger btn-sm">
-              Cerrar sesión
-            </button>
-          </form>
+            <!-- Botón Perfil -->
+            <a href="{% url 'asistencias:editar_perfil' %}" class="btn btn-outline-light btn-sm">
+              <i class="fas fa-user-edit"></i> Perfil
+            </a>
 
-        {% else %}
+            <!-- Botón Cerrar sesión -->
+            <form method="post"
+                  action="{% url 'asistencias:logout' %}"
+                  class="d-inline w-100 w-lg-auto">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm w-100 w-lg-auto">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+              </button>
+            </form>
 
-          <!-- Si no está logueado, mostrar botón de login -->
-          <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">
-            Iniciar sesión
-          </a>
+          {% else %}
 
-        {% endif %}
+            <!-- Botón de login -->
+            <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">
+              <i class="fas fa-sign-in-alt"></i> Iniciar sesión
+            </a>
 
+          {% endif %}
+
+        </div>
       </div>
     </div>
   </nav>
@@ -72,115 +89,130 @@
     <div class="row">
 
       {% if request.user.is_authenticated %}
-        <!-- SIDEBAR IZQUIERDO -->
-        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse show" id="sidebarMenu">
-          <div class="position-sticky pt-3 sidebar-sticky">
+        <!-- SIDEBAR IZQUIERDO CON BOTÓN COLAPSABLE EN MÓVIL -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar" id="sidebarMenu">
+          
+          <!-- Botón para mostrar/ocultar menú en móvil -->
+          <div class="d-md-none p-3 border-bottom">
+            <button class="btn btn-sm btn-outline-dark w-100" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#sidebarMenuContent" 
+                    aria-expanded="false">
+              <i class="fas fa-bars"></i> Menú
+            </button>
+          </div>
 
-            <ul class="nav flex-column mb-3">
+          <!-- Contenido del sidebar (colapsable en móvil) -->
+          <div class="collapse d-md-block" id="sidebarMenuContent">
+            <div class="position-sticky pt-3 sidebar-sticky">
 
-              <!-- Siempre disponible -->
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'asistencias:home' %}">
-                  Inicio
-                </a>
-              </li>
+              <ul class="nav flex-column mb-3">
 
-              {% if request.user.is_staff or request.user.rol == "ADMIN" %}
+                <!-- Siempre disponible -->
                 <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:admin_dashboard' %}">
-                    Dashboard Admin
+                  <a class="nav-link" href="{% url 'asistencias:home' %}">
+                    <i class="fas fa-home"></i> Inicio
                   </a>
                 </li>
 
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:usuarios_lista' %}">
-                    Usuarios
-                  </a>
-                </li>
+                {% if request.user.is_staff or request.user.rol == "ADMIN" %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:admin_dashboard' %}">
+                      <i class="fas fa-tachometer-alt"></i> Dashboard Admin
+                    </a>
+                  </li>
 
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:carreras_lista' %}">
-                    Carreras
-                  </a>
-                </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:usuarios_lista' %}">
+                      <i class="fas fa-users"></i> Usuarios
+                    </a>
+                  </li>
 
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:materias_lista' %}">
-                    Materias
-                  </a>
-                </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:carreras_lista' %}">
+                      <i class="fas fa-book-open"></i> Carreras
+                    </a>
+                  </li>
 
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:admin_cursadas' %}">
-                    Cursadas
-                  </a>
-                </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:materias_lista' %}">
+                      <i class="fas fa-books"></i> Materias
+                    </a>
+                  </li>
 
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:lista_justificativos' %}">
-                    Justificativos
-                  </a>
-                </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:admin_cursadas' %}">
+                      <i class="fas fa-chalkboard-teacher"></i> Cursadas
+                    </a>
+                  </li>
 
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:reportes_curso' %}">
-                    Reportes
-                  </a>
-                </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:lista_justificativos' %}">
+                      <i class="fas fa-file-medical"></i> Justificativos
+                    </a>
+                  </li>
 
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:admin_metricas' %}">
-                    Métricas Admin
-                  </a>
-                </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:reportes_curso' %}">
+                      <i class="fas fa-chart-bar"></i> Reportes
+                    </a>
+                  </li>
 
-              {% elif request.user.rol == "DOCENTE" %}
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:docente_dashboard' %}">
-                    Panel docente
-                  </a>
-                </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:admin_metricas' %}">
+                      <i class="fas fa-chart-line"></i> Métricas Admin
+                    </a>
+                  </li>
 
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:cursos_docente' %}">
-                    Mis cursos
-                  </a>
-                </li>
+                {% elif request.user.rol == "DOCENTE" %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:docente_dashboard' %}">
+                      <i class="fas fa-chalkboard"></i> Panel docente
+                    </a>
+                  </li>
 
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:docente_metricas' %}">
-                    Métricas
-                  </a>
-                </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:cursos_docente' %}">
+                      <i class="fas fa-book"></i> Mis cursos
+                    </a>
+                  </li>
 
-              {% elif request.user.rol == "ALUMNO" %}
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:alumno_dashboard' %}">
-                    Mi panel
-                  </a>
-                </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:docente_metricas' %}">
+                      <i class="fas fa-chart-pie"></i> Métricas
+                    </a>
+                  </li>
 
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:consulta_asistencia' %}">
-                    Mis asistencias
-                  </a>
-                </li>
+                {% elif request.user.rol == "ALUMNO" %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:alumno_dashboard' %}">
+                      <i class="fas fa-user-graduate"></i> Mi panel
+                    </a>
+                  </li>
 
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:subir_certificado' %}">
-                    Subir justificativo
-                  </a>
-                </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:consulta_asistencia' %}">
+                      <i class="fas fa-clipboard-check"></i> Mis asistencias
+                    </a>
+                  </li>
 
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'asistencias:alumno_metricas' %}">
-                    Métricas
-                  </a>
-                </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:subir_certificado' %}">
+                      <i class="fas fa-upload"></i> Subir justificativo
+                    </a>
+                  </li>
 
-              {% endif %}
-            </ul>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'asistencias:alumno_metricas' %}">
+                      <i class="fas fa-chart-area"></i> Métricas
+                    </a>
+                  </li>
 
+                {% endif %}
+              </ul>
+
+            </div>
           </div>
         </nav>
 
@@ -204,16 +236,18 @@
 
   <!-- FOOTER -->
   <footer class="text-center py-3 mt-4 border-top small">
-    Sistema de Gestión Académica — Módulo de Asistencias · CENT 40
+    <i class="fas fa-graduation-cap"></i> Sistema de Gestión Académica — Módulo de Asistencias · CENT 40
   </footer>
 
-  <!-- JS Bootstrap -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+  {% block extra_js %}{% endblock %}
 
   <!-- JS propio -->
   <script src="{% static 'js/main.js' %}"></script>
 
-  <!-- Script Modo Oscuro: sincroniza botón, clase y cookie 'dark_mode' -->
+  <!-- Script Modo Oscuro -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const toggle = document.getElementById('darkModeToggle');
