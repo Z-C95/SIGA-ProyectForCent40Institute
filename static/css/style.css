@@ -726,3 +726,28 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb:hover {
     display: none;
   }
 }
+
+/* ================================
+   FIX CRÍTICO - OCULTAR MENÚ EN MÓVIL
+   ================================ */
+
+@media (max-width: 991.98px) {
+  /* Forzar que el navbar-collapse esté oculto por defecto */
+  .navbar-collapse {
+    display: none !important;
+  }
+  
+  /* Solo mostrar cuando Bootstrap agrega la clase .show */
+  .navbar-collapse.show {
+    display: block !important;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #1a1a2e;
+    border-radius: 0 0 8px 8px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 1050;
+  }
+}
